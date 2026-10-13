@@ -1,0 +1,23 @@
+[functions.elara-chat]
+verify_jwt = true
+entrypoint = "./functions/elara-chat/index.ts"
+
+[functions.elara-extract]
+verify_jwt = true
+entrypoint = "./functions/elara-extract/index.ts"
+
+[functions.elara-suggest]
+verify_jwt = true
+entrypoint = "./functions/elara-suggest/index.ts"
+
+[functions.elara-invite]
+verify_jwt = true
+entrypoint = "./functions/elara-invite/index.ts"
+
+[functions.elara-export]
+verify_jwt = true
+entrypoint = "./functions/elara-export/index.ts"
+
+[functions.elara-delete]
+verify_jwt = true
+entrypoint = "./functions/elara-delete/index.ts"
