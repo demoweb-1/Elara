@@ -91,7 +91,7 @@ export function Suggestions() {
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-burgundy shrink-0 mt-0.5" />
                   <div><p className="text-sm text-ink mb-2">Elara needs to learn more:</p><p className="text-sm text-ink-secondary italic">{result.question}</p>
-                    <Button size="sm" variant="secondary" className="mt-3" onClick={() => window.location.href = '/chat'}>Chat with Elara</Button></div>
+                    <Button size="sm" variant="secondary" className="mt-3" onClick={() => window.location.href = import.meta.env.BASE_URL + 'chat'}>Chat with Elara</Button></div>
                 </div>
               </Card>
             ) : (

@@ -44,7 +44,7 @@ export function Privacy() {
     setDeleting(true)
     const { error } = await deleteAccount()
     if (error) { toast(error, 'error'); setDeleting(false); setDeleteOpen(false) }
-    else { toast('Account deleted', 'success'); await signOut(); window.location.href = '/' }
+    else { toast('Account deleted', 'success'); await signOut(); window.location.href = import.meta.env.BASE_URL }
   }
 
   const handleUpdatePref = async (key: string, value: boolean) => {
