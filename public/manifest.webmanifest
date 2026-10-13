@@ -2,14 +2,14 @@
   "name": "Elara — Your relationship, remembered.",
   "short_name": "Elara",
   "description": "A warm, intelligent AI companion that remembers meaningful personal details and helps couples understand and care for each other.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#FAF8F5",
   "theme_color": "#772D43",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
