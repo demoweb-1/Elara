@@ -1,3 +1,4 @@
+import { PageSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useMemo } from 'react'
 import { Search, Plus, Trash2, Edit2, Check, Lock, Share2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -81,7 +82,7 @@ export function Memories() {
     else { toast('Memory confirmed as still accurate', 'success'); loadMemories() }
   }
 
-  if (loading) return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>
+  if (loading) return <PageSkeleton />
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">

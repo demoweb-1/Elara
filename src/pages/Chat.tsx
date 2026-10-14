@@ -1,3 +1,4 @@
+import { ChatSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, RotateCcw, BookHeart, Check, X, Sparkles, Square } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -17,6 +18,7 @@ export function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [booting, setBooting] = useState(true)
   const [streaming, setStreaming] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [conversation, setConversation] = useState<Conversation | null>(null)
@@ -41,11 +43,14 @@ export function Chat() {
   useEffect(() => { scrollToBottom() }, [messages, streamingText, scrollToBottom])
 
   useEffect(() => {
-    if (user) loadInitialData()
+    if (user) loadInitialData().finally(() => setBooting(false))
   }, [user])
 
   const loadInitialData = async () => {
     if (!user) return
+    const memsP = Promise.resolve(supabase.from('memories').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }))
+    const connP = Promise.resolve(supabase.from('couple_connections').select('*')
+      .or(`user_a.eq.${user.id},user_b.eq.${user.id}`).eq('invitation_status', 'accepted').maybeSingle())
     const { data: existingConv } = await supabase
       .from('conversations').select('*').eq('user_id', user.id)
       .order('updated_at', { ascending: false }).limit(1).maybeSingle()
@@ -61,15 +66,12 @@ export function Chat() {
     const { data: msgs } = await supabase
       .from('messages').select('*').eq('conversation_id', conv.id).order('created_at', { ascending: true })
     setMessages((msgs as Message[]) || [])
+    setBooting(false)
 
-    const { data: mems } = await supabase
-      .from('memories').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+    const { data: mems } = await memsP
     setMemories((mems as Memory[]) || [])
 
-    const { data: conn } = await supabase
-      .from('couple_connections').select('*')
-      .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
-      .eq('invitation_status', 'accepted').maybeSingle()
+    const { data: conn } = await connP
 
     if (conn) {
       const { data: shared } = await supabase.from('memories').select('*').neq('user_id', user.id)
@@ -254,7 +256,9 @@ export function Chat() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
-        {messages.length === 0 && !loading ? (
+        {booting ? (
+          <ChatSkeleton />
+        ) : messages.length === 0 && !loading ? (
           <div className="h-full flex items-center justify-center animate-fade-in">
             <EmptyState icon={<Sparkles className="w-7 h-7" />} title="Start a conversation with Elara"
               description="Share what's on your mind. Elara listens with warmth and remembers what matters." />
@@ -314,7 +318,7 @@ export function Chat() {
             ) : (
               <button onClick={handleSend} disabled={!input.trim() || loading}
                 className={cn('w-11 h-11 rounded-full flex items-center justify-center transition-all shrink-0',
-                  input.trim() && !loading ? 'bg-burgundy text-white hover:bg-burgundy-dark shadow-sm hover:shadow-burgundy' : 'bg-warm-grey-100 text-ink-tertiary')}
+                  input.trim() && !loading ? 'bg-burgundy btn-gloss text-white hover:bg-burgundy-dark' : 'glass-pill text-ink-tertiary')}
                 aria-label="Send message">
                 <Send className="w-4 h-4" />
               </button>

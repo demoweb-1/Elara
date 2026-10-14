@@ -136,8 +136,8 @@ function ToggleRow({ label, desc, checked, onChange }: { label: string; desc: st
   return (
     <label className="flex items-center justify-between cursor-pointer">
       <div><p className="text-sm font-medium text-ink">{label}</p><p className="text-xs text-ink-tertiary">{desc}</p></div>
-      <button onClick={() => onChange(!checked)} className={`relative w-11 h-6 rounded-full transition-all ${checked ? 'bg-burgundy' : 'bg-warm-grey-200'}`} role="switch" aria-checked={checked}>
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all ${checked ? 'translate-x-5' : ''}`} />
+      <button onClick={() => onChange(!checked)} className={`relative w-12 h-7 rounded-full transition-all shrink-0 ${checked ? 'bg-burgundy btn-gloss' : 'glass-pill'}`} role="switch" aria-checked={checked}>
+        <span className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-md transition-all z-10 ${checked ? 'translate-x-5' : ''}`} />
       </button>
     </label>
   )

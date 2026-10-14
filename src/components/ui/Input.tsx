@@ -19,7 +19,7 @@ export function Input({ label, error, hint, className, id, ...props }: InputProp
       <input
         id={inputId}
         className={cn(
-          'w-full rounded-xl bg-white border px-4 py-2.5 text-sm text-ink',
+          'w-full rounded-2xl field border px-4 py-2.5 text-sm text-ink',
           'placeholder:text-ink-tertiary transition-all duration-200',
           'focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy',
           error ? 'border-error' : 'border-warm-grey-200',
@@ -52,7 +52,7 @@ export function Textarea({ label, error, hint, className, id, children, ...props
       <textarea
         id={textareaId}
         className={cn(
-          'w-full rounded-xl bg-white border px-4 py-2.5 text-sm text-ink',
+          'w-full rounded-2xl field border px-4 py-2.5 text-sm text-ink',
           'placeholder:text-ink-tertiary transition-all duration-200 resize-none',
           'focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy',
           error ? 'border-error' : 'border-warm-grey-200',
@@ -86,7 +86,7 @@ export function Select({ label, error, className, id, children, ...props }: Sele
       <select
         id={selectId}
         className={cn(
-          'w-full rounded-xl bg-white border px-4 py-2.5 text-sm text-ink',
+          'w-full rounded-2xl field border px-4 py-2.5 text-sm text-ink',
           'transition-all duration-200 cursor-pointer',
           'focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy',
           error ? 'border-error' : 'border-warm-grey-200',

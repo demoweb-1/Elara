@@ -26,10 +26,10 @@ export function Pricing() {
             <Button variant="secondary" className="w-full" disabled>You're on this plan</Button>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 glass-tint">
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2"><h2 className="text-lg font-semibold text-ink">Plus</h2><Badge variant="accent">Coming soon</Badge></div>
-              <p className="text-3xl font-semibold text-ink"><span className="text-sm font-normal text-ink-tertiary">Future pricing</span></p>
+              <p className="text-3xl font-semibold text-ink"><span className="text-sm font-normal text-ink-secondary">Future pricing</span></p>
             </div>
             <ul className="space-y-2.5 mb-6">
               <Feature text="Everything in Free" /><Feature text="Higher AI usage allowances" /><Feature text="Enhanced memory retrieval" />

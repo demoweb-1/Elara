@@ -43,7 +43,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-white/80 text-burgundy shadow-sm ring-1 ring-white'
+                    ? 'glass-pill text-burgundy'
                     : 'text-ink-secondary hover:text-ink hover:bg-warm-grey-50'
                 )
               }
@@ -61,7 +61,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-white/80 text-burgundy shadow-sm ring-1 ring-white'
+                  ? 'glass-pill text-burgundy'
                   : 'text-ink-secondary hover:text-ink hover:bg-warm-grey-50'
               )
             }
@@ -104,7 +104,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               className={({ isActive }) =>
                 cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors min-w-[56px]',
-                  isActive ? 'text-burgundy bg-white/85 shadow-sm ring-1 ring-white font-semibold' : 'text-ink-secondary'
+                  isActive ? 'glass-pill text-burgundy font-semibold' : 'text-ink-secondary'
                 )
               }
             >

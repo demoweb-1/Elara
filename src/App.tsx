@@ -1,28 +1,27 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
-import { Spinner } from './components/ui/Card'
+import { PageSkeleton } from './components/ui/Skeletons'
 import { Landing } from './pages/Landing'
 import { AuthPage } from './pages/AuthPage'
-import { Onboarding } from './pages/Onboarding'
+const Onboarding = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.Onboarding })))
 import { AppLayout } from './components/AppLayout'
-import { Chat } from './pages/Chat'
-import { Memories } from './pages/Memories'
-import { Together } from './pages/Together'
-import { Suggestions } from './pages/Suggestions'
-import { Reminders } from './pages/Reminders'
-import { Profile } from './pages/Profile'
-import { Privacy } from './pages/Privacy'
-import { Pricing } from './pages/Pricing'
-import { InvitationLanding } from './pages/InvitationLanding'
+const Chat = lazy(() => import('./pages/Chat').then((m) => ({ default: m.Chat })))
+const Memories = lazy(() => import('./pages/Memories').then((m) => ({ default: m.Memories })))
+const Together = lazy(() => import('./pages/Together').then((m) => ({ default: m.Together })))
+const Suggestions = lazy(() => import('./pages/Suggestions').then((m) => ({ default: m.Suggestions })))
+const Reminders = lazy(() => import('./pages/Reminders').then((m) => ({ default: m.Reminders })))
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
+const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
+const Pricing = lazy(() => import('./pages/Pricing').then((m) => ({ default: m.Pricing })))
+const InvitationLanding = lazy(() => import('./pages/InvitationLanding').then((m) => ({ default: m.InvitationLanding })))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-ivory">
-        <Spinner size="lg" />
-      </div>
+      <AppLayout><PageSkeleton /></AppLayout>
     )
   }
 
@@ -38,9 +37,7 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-ivory">
-        <Spinner size="lg" />
-      </div>
+      <AppLayout><PageSkeleton /></AppLayout>
     )
   }
 
@@ -53,6 +50,7 @@ function OnboardingGate({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <Suspense fallback={<div className="min-h-screen" />}>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/auth" element={<AuthPage />} />
@@ -63,6 +61,7 @@ export default function App() {
           <ProtectedRoute>
             <OnboardingGate>
               <AppLayout>
+                <Suspense fallback={<PageSkeleton />}>
                 <Routes>
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/memories" element={<Memories />} />
@@ -74,11 +73,13 @@ export default function App() {
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="*" element={<Navigate to="/chat" replace />} />
                 </Routes>
+                </Suspense>
               </AppLayout>
             </OnboardingGate>
           </ProtectedRoute>
         }
       />
     </Routes>
+    </Suspense>
   )
 }

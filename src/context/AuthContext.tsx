@@ -16,6 +16,17 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+const PROFILE_CACHE = 'elara.profile.v1'
+function readCachedProfile(userId: string): Profile | null {
+  try {
+    const p = JSON.parse(localStorage.getItem(PROFILE_CACHE) || 'null')
+    return p && p.id === userId ? (p as Profile) : null
+  } catch { return null }
+}
+function cacheProfile(p: Profile) {
+  try { localStorage.setItem(PROFILE_CACHE, JSON.stringify(p)) } catch { /* storage unavailable */ }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
@@ -40,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const existing = await loadProfile(userId)
     if (existing) {
       setProfile(existing)
+      cacheProfile(existing)
       return existing
     }
 
@@ -58,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setProfile(data as Profile)
+    cacheProfile(data as Profile)
     return data as Profile
   }
 
@@ -70,6 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null)
 
       if (session?.user) {
+        const cached = readCachedProfile(session.user.id)
+        if (cached) { setProfile(cached); setLoading(false) }
         ensureProfileExists(session.user.id, session.user.email || '').then(() => {
           if (mounted) setLoading(false)
         })
@@ -90,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })()
       } else {
         setProfile(null)
+        try { localStorage.removeItem(PROFILE_CACHE) } catch { /* ignore */ }
       }
     })
 

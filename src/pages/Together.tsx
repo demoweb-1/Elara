@@ -1,3 +1,4 @@
+import { TogetherSkeleton } from '@/components/ui/Skeletons'
 import { Overlap } from '@/components/Overlap'
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -109,11 +110,7 @@ export function Together() {
   }
 
   if (view === 'loading') {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#C8183F' }} />
-      </div>
-    )
+    return <TogetherSkeleton />
   }
 
   return (

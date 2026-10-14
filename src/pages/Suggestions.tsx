@@ -1,3 +1,4 @@
+import { SuggestionsSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect } from 'react'
 import { Sparkles, Gift, Calendar, HandHeart, Lightbulb } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -64,11 +65,7 @@ export function Suggestions() {
           ))}
         </div>
 
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Spinner size="lg" /><p className="text-sm text-ink-tertiary mt-4">Elara is thinking of suggestions…</p>
-          </div>
-        )}
+        {loading && <SuggestionsSkeleton />}
 
         {!loading && result && (
           <div className="animate-slide-up">

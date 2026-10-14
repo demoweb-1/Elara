@@ -1,3 +1,4 @@
+import { PageSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect } from 'react'
 import { Bell, Plus, Trash2, Edit2, Check, Calendar } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -70,7 +71,7 @@ export function Reminders() {
     else { toast('Reminder deleted', 'success'); setDeleteTarget(null); setConfirmOpen(false); loadReminders() }
   }
 
-  if (loading) return <div className="flex items-center justify-center h-full"><Spinner size="lg" /></div>
+  if (loading) return <PageSkeleton />
 
   const upcoming = reminders.filter((r) => !r.completed)
   const completed = reminders.filter((r) => r.completed)
