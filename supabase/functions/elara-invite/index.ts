@@ -8,6 +8,7 @@ const corsHeaders = {
 
 // Approved application origins — the X-App-Url header is only trusted if it matches one of these.
 const APPROVED_ORIGINS = [
+  "https://demoweb-1.github.io/Elara",
   "https://elara-ai-relationshi-z6nf.bolt.host",
   "http://localhost:5173",
 ];
@@ -41,8 +42,9 @@ function getAppUrl(req: Request): string {
   const appUrlHeader = req.headers.get("x-app-url");
   if (appUrlHeader) {
     const normalized = appUrlHeader.replace(/\/$/, "").toLowerCase();
-    const approved = APPROVED_ORIGINS.some((o) => normalized === o.toLowerCase());
-    if (approved) return normalized;
+    // Return the approved entry itself so its capitalisation is kept (GitHub Pages paths are case-sensitive).
+    const approved = APPROVED_ORIGINS.find((o) => normalized === o.toLowerCase());
+    if (approved) return approved;
   }
   // Fallback: use the first approved origin, or the request origin
   return APPROVED_ORIGINS[0] || new URL(req.url).origin;
