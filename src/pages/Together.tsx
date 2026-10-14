@@ -1,3 +1,4 @@
+import { Overlap } from '@/components/Overlap'
 import { useState, useEffect, useCallback } from 'react'
 import {
   Heart, UserPlus, Copy, Check, Lock, Unlink, Sparkles, Share2,
@@ -110,24 +111,24 @@ export function Together() {
   if (view === 'loading') {
     return (
       <div className="flex items-center justify-center h-full min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#F26B78' }} />
+        <div className="w-8 h-8 border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#C8183F' }} />
       </div>
     )
   }
 
   return (
-    <div className="min-h-full overflow-y-auto" style={{ background: 'linear-gradient(180deg, #FFF7F8 0%, #FFF0F2 30%, #FFFFFF 100%)' }}>
+    <div className="min-h-full overflow-y-auto" style={{ background: 'transparent' }}>
       {/* Ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full opacity-30 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(242,107,120,0.1), transparent 70%)' }} />
+        style={{ background: 'radial-gradient(ellipse, rgba(200,24,63,0.1), transparent 70%)' }} />
 
       <div className="relative z-10 px-4 md:px-8 py-6 max-w-2xl mx-auto w-full">
         {/* Brand + heading */}
         <div className="flex items-center gap-2 mb-1 animate-fade-in">
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #F26B78, #D94A60)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#C8183F' }}>
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="text-sm font-semibold" style={{ color: '#30252A' }}>Elara</span>
+          <span className="text-sm font-semibold" style={{ color: '#1D1317' }}>Elara</span>
         </div>
 
         {view === 'disconnected' && (
@@ -210,21 +211,14 @@ export function Together() {
 function DisconnectedView({ onInvite, onEnterCode }: { onInvite: () => void; onEnterCode: () => void }) {
   return (
     <div className="animate-fade-in">
-      <h1 className="text-2xl font-semibold mb-2" style={{ color: '#30252A' }}>Your connection starts here.</h1>
-      <p className="text-sm leading-relaxed mb-8" style={{ color: '#817178' }}>
+      <h1 className="text-2xl font-semibold mb-2" style={{ color: '#1D1317' }}>Your connection starts here.</h1>
+      <p className="text-sm leading-relaxed mb-8" style={{ color: '#6A5A60' }}>
         Connect with your partner so Elara can understand your relationship and help you both remember what matters.
       </p>
 
       <div className="glass-panel rounded-3xl p-8 mb-4">
         <div className="flex items-center justify-center mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-full glass-panel-soft flex items-center justify-center text-2xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>🌿</div>
-            <svg width="44" height="24" viewBox="0 0 44 24" fill="none">
-              <path d="M2 12 Q22 4 42 12" stroke="#F26B78" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.4" fill="none" />
-              <circle cx="22" cy="8" r="3" fill="#F26B78" opacity="0.15" />
-            </svg>
-            <div className="w-16 h-16 rounded-full glass-panel-soft flex items-center justify-center text-2xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>🤝</div>
-          </div>
+          <Overlap left="🌿" right="🤝" />
         </div>
 
         <button onClick={onInvite}
@@ -239,7 +233,7 @@ function DisconnectedView({ onInvite, onEnterCode }: { onInvite: () => void; onE
         </button>
       </div>
 
-      <p className="text-xs text-center leading-relaxed px-6" style={{ color: '#817178' }}>
+      <p className="text-xs text-center leading-relaxed px-6" style={{ color: '#6A5A60' }}>
         Connecting requires both people to consent. Elara never shares your private conversations with your partner.
       </p>
     </div>
@@ -264,23 +258,23 @@ function PendingView({
 
   return (
     <div className="animate-fade-in">
-      <h1 className="text-2xl font-semibold mb-2" style={{ color: '#30252A' }}>Invitation pending.</h1>
-      <p className="text-sm leading-relaxed mb-6" style={{ color: '#817178' }}>
+      <h1 className="text-2xl font-semibold mb-2" style={{ color: '#1D1317' }}>Invitation pending.</h1>
+      <p className="text-sm leading-relaxed mb-6" style={{ color: '#6A5A60' }}>
         Your invitation is waiting to be accepted. Share the link or pairing code with your partner.
       </p>
 
       <div className="glass-panel rounded-3xl p-6 mb-4">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(242,107,120,0.1)' }}>
-            <Clock className="w-5 h-5" style={{ color: '#F26B78' }} />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(200,24,63,0.1)' }}>
+            <Clock className="w-5 h-5" style={{ color: '#C8183F' }} />
           </div>
           <div>
-            <p className="text-sm font-medium" style={{ color: '#30252A' }}>Awaiting acceptance</p>
-            <p className="text-xs" style={{ color: '#817178' }}>{expiryText}</p>
+            <p className="text-sm font-medium" style={{ color: '#1D1317' }}>Awaiting acceptance</p>
+            <p className="text-xs" style={{ color: '#6A5A60' }}>{expiryText}</p>
           </div>
         </div>
 
-        <p className="text-sm leading-relaxed mb-4" style={{ color: '#817178' }}>
+        <p className="text-sm leading-relaxed mb-4" style={{ color: '#6A5A60' }}>
           Your pairing code and link were shown when you created this invitation. If you lost them, you can revoke this invitation and create a new one.
         </p>
 
@@ -298,7 +292,7 @@ function PendingView({
         </div>
       </div>
 
-      <p className="text-xs text-center leading-relaxed" style={{ color: '#817178' }}>
+      <p className="text-xs text-center leading-relaxed" style={{ color: '#6A5A60' }}>
         Only one pending invitation at a time. Creating a new one revokes the current invitation.
       </p>
 
@@ -332,13 +326,13 @@ function ConnectedView({
   return (
     <div className="animate-fade-in">
       <div className="flex items-center gap-2 mb-1">
-        <h1 className="text-2xl font-semibold" style={{ color: '#30252A' }}>Your connection.</h1>
+        <h1 className="text-2xl font-semibold" style={{ color: '#1D1317' }}>Your connection.</h1>
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(34,197,94,0.08)' }}>
           <div className="w-2 h-2 rounded-full" style={{ background: '#22C55E' }} />
           <span className="text-xs font-medium" style={{ color: '#16A34A' }}>Active</span>
         </div>
       </div>
-      <p className="text-sm leading-relaxed mb-6" style={{ color: '#817178' }}>
+      <p className="text-sm leading-relaxed mb-6" style={{ color: '#6A5A60' }}>
         Two people. One connection. A better understanding of each other.
       </p>
 
@@ -346,33 +340,21 @@ function ConnectedView({
       <div className="glass-panel rounded-3xl p-6 mb-6">
         <div className="flex items-center justify-center gap-4 mb-4">
           <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 rounded-full glass-panel-soft flex items-center justify-center text-2xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>
-              {profile?.avatar_emoji || '🌿'}
-            </div>
-            <span className="text-xs font-medium" style={{ color: '#30252A' }}>{profile?.display_name || 'You'}</span>
-          </div>
-          <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
-            <path d="M2 12 Q20 4 38 12" stroke="#F26B78" strokeWidth="2" opacity="0.3" fill="none" />
-            <circle cx="20" cy="8" r="3" fill="#F26B78" opacity="0.2" />
-          </svg>
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-16 h-16 rounded-full glass-panel-soft flex items-center justify-center text-2xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>
-              {partnerEmoji || '🤝'}
-            </div>
-            <span className="text-xs font-medium" style={{ color: '#30252A' }}>{partnerName}</span>
+            <Overlap left={profile?.avatar_emoji || '🌿'} right={partnerEmoji || '🤝'} />
+            <span className="text-xs font-medium" style={{ color: '#1D1317' }}>{profile?.display_name || 'You'} and {partnerName}</span>
           </div>
         </div>
-        <p className="text-xs text-center" style={{ color: '#817178' }}>
+        <p className="text-xs text-center" style={{ color: '#6A5A60' }}>
           You and {partnerName} can share approved memories with each other.
         </p>
       </div>
 
       {/* My shared memories */}
       <section className="mb-6">
-        <h2 className="text-sm font-semibold mb-3" style={{ color: '#30252A' }}>Memories you're sharing</h2>
+        <h2 className="text-sm font-semibold mb-3" style={{ color: '#1D1317' }}>Memories you're sharing</h2>
         {mySharedMemories.length === 0 ? (
           <div className="glass-panel-soft rounded-2xl p-4">
-            <p className="text-sm text-center py-2" style={{ color: '#817178' }}>You haven't shared any memories yet. Visit your Memories library to share.</p>
+            <p className="text-sm text-center py-2" style={{ color: '#6A5A60' }}>You haven't shared any memories yet. Visit your Memories library to share.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -380,12 +362,12 @@ function ConnectedView({
               <div key={m.id} className="glass-panel-soft rounded-2xl p-3 flex items-start justify-between gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span style={{ color: '#F26B78' }}>{CATEGORY_EMOJIS[m.category]}</span>
-                    <span className="text-xs font-medium" style={{ color: '#D94A60' }}>{CATEGORY_LABELS[m.category]}</span>
+                    <span style={{ color: '#C8183F' }}>{CATEGORY_EMOJIS[m.category]}</span>
+                    <span className="text-xs font-medium" style={{ color: '#C8183F' }}>{CATEGORY_LABELS[m.category]}</span>
                   </div>
-                  <p className="text-sm" style={{ color: '#30252A' }}>{m.content}</p>
+                  <p className="text-sm" style={{ color: '#1D1317' }}>{m.content}</p>
                 </div>
-                <button onClick={() => onRevokeShare(m)} className="text-xs transition-colors shrink-0" style={{ color: '#817178' }}>
+                <button onClick={() => onRevokeShare(m)} className="text-xs transition-colors shrink-0" style={{ color: '#6A5A60' }}>
                   <Lock className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -396,20 +378,20 @@ function ConnectedView({
 
       {/* Partner's shared memories */}
       <section className="mb-6">
-        <h2 className="text-sm font-semibold mb-3" style={{ color: '#30252A' }}>Memories {partnerName} shared with you</h2>
+        <h2 className="text-sm font-semibold mb-3" style={{ color: '#1D1317' }}>Memories {partnerName} shared with you</h2>
         {sharedMemories.length === 0 ? (
           <div className="glass-panel-soft rounded-2xl p-4">
-            <p className="text-sm text-center py-2" style={{ color: '#817178' }}>{partnerName} hasn't shared any memories with you yet.</p>
+            <p className="text-sm text-center py-2" style={{ color: '#6A5A60' }}>{partnerName} hasn't shared any memories with you yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {sharedMemories.map((m) => (
               <div key={m.id} className="glass-panel-soft rounded-2xl p-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <span style={{ color: '#F26B78' }}>{CATEGORY_EMOJIS[m.category]}</span>
-                  <span className="text-xs font-medium" style={{ color: '#D94A60' }}>{CATEGORY_LABELS[m.category]}</span>
+                  <span style={{ color: '#C8183F' }}>{CATEGORY_EMOJIS[m.category]}</span>
+                  <span className="text-xs font-medium" style={{ color: '#C8183F' }}>{CATEGORY_LABELS[m.category]}</span>
                 </div>
-                <p className="text-sm" style={{ color: '#30252A' }}>{m.content}</p>
+                <p className="text-sm" style={{ color: '#1D1317' }}>{m.content}</p>
               </div>
             ))}
           </div>
@@ -417,10 +399,10 @@ function ConnectedView({
       </section>
 
       {/* Actions */}
-      <div className="pt-4 border-t" style={{ borderColor: 'rgba(217,74,96,0.08)' }}>
+      <div className="pt-4 border-t" style={{ borderColor: 'rgba(200,24,63,0.08)' }}>
         <button onClick={onDisconnect}
           className="flex items-center gap-2 text-sm font-medium transition-colors"
-          style={{ color: '#DC2626' }}>
+          style={{ color: '#9B1C1C' }}>
           <Unlink className="w-4 h-4" />
           Unlink partner
         </button>
@@ -505,10 +487,10 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
         <div className="space-y-5">
           {/* Pairing code */}
           <div>
-            <p className="text-xs font-medium mb-2" style={{ color: '#817178' }}>Pairing code</p>
+            <p className="text-xs font-medium mb-2" style={{ color: '#6A5A60' }}>Pairing code</p>
             <div className="flex items-center gap-2">
               <div className="flex-1 glass-input rounded-xl px-4 py-3 text-center">
-                <span className="text-xl font-mono tracking-[0.4em] font-semibold" style={{ color: '#30252A' }}>{pairingCode}</span>
+                <span className="text-xl font-mono tracking-[0.4em] font-semibold" style={{ color: '#1D1317' }}>{pairingCode}</span>
               </div>
               <button onClick={handleCopyCode}
                 className="glass-button-secondary rounded-xl px-3 py-3 transition-all"
@@ -520,10 +502,10 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
 
           {/* Invitation link */}
           <div>
-            <p className="text-xs font-medium mb-2" style={{ color: '#817178' }}>Invitation link</p>
+            <p className="text-xs font-medium mb-2" style={{ color: '#6A5A60' }}>Invitation link</p>
             <div className="flex items-center gap-2">
               <input type="text" value={inviteUrl} readOnly
-                className="flex-1 glass-input rounded-xl px-3 py-2.5 text-xs" style={{ color: '#30252A' }}
+                className="flex-1 glass-input rounded-xl px-3 py-2.5 text-xs" style={{ color: '#1D1317' }}
                 onClick={(e) => (e.target as HTMLInputElement).select()} />
               <button onClick={handleCopyUrl}
                 className="glass-button-secondary rounded-xl px-3 py-2.5 transition-all"
@@ -535,7 +517,7 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
 
           {/* Share buttons */}
           <div>
-            <p className="text-xs font-medium mb-2" style={{ color: '#817178' }}>Share via</p>
+            <p className="text-xs font-medium mb-2" style={{ color: '#6A5A60' }}>Share via</p>
             <div className="flex gap-2">
               <ShareButton onClick={handleWhatsApp} icon={<MessageCircle className="w-4 h-4" />} label="WhatsApp" />
               <ShareButton onClick={handleTelegram} icon={<Send className="w-4 h-4" />} label="Telegram" />
@@ -543,7 +525,7 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
             </div>
           </div>
 
-          <p className="text-xs leading-relaxed" style={{ color: '#817178' }}>
+          <p className="text-xs leading-relaxed" style={{ color: '#6A5A60' }}>
             Expires in 7 days. Your partner will need to sign in or create an account and enter the pairing code to connect.
           </p>
 
@@ -560,16 +542,16 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
     <Modal open={open} onClose={onClose} title="Invite your partner" description="Create a secure, single-use invitation." size="md">
     {step === 'creating' ? (
         <div className="py-8 text-center">
-          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#F26B78' }} />
-          <p className="text-sm mt-4" style={{ color: '#817178' }}>Creating your invitation…</p>
+          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#C8183F' }} />
+          <p className="text-sm mt-4" style={{ color: '#6A5A60' }}>Creating your invitation…</p>
         </div>
       ) : (
         <div className="space-y-5">
-          <p className="text-sm leading-relaxed" style={{ color: '#817178' }}>
+          <p className="text-sm leading-relaxed" style={{ color: '#6A5A60' }}>
             We'll generate a unique pairing code and invitation link. Share them with your partner through any messaging app. No email required.
           </p>
 
-          <div className="flex items-center gap-2 text-xs px-4 py-3 rounded-xl" style={{ background: 'rgba(242,107,120,0.06)', color: '#817178' }}>
+          <div className="flex items-center gap-2 text-xs px-4 py-3 rounded-xl" style={{ background: 'rgba(200,24,63,0.06)', color: '#6A5A60' }}>
             <Lock className="w-3.5 h-3.5 shrink-0" />
             <span>Connecting requires both people to have accounts and to consent. Private conversations stay private.</span>
           </div>
@@ -656,7 +638,7 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
     <Modal open={open} onClose={onClose} title="Enter your invitation" size="md">
       {step === 'token' && (
         <div className="space-y-4">
-          <p className="text-sm leading-relaxed" style={{ color: '#817178' }}>
+          <p className="text-sm leading-relaxed" style={{ color: '#6A5A60' }}>
             Paste the invitation link or token that your partner shared with you.
           </p>
           <input
@@ -665,10 +647,10 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
             onChange={(e) => { setInviteToken(e.target.value); setError('') }}
             placeholder="Paste link or token…"
             className="glass-input w-full rounded-xl px-4 py-3 text-sm"
-            style={{ color: '#30252A' }}
+            style={{ color: '#1D1317' }}
             onKeyDown={(e) => { if (e.key === 'Enter') handleCheckToken() }}
           />
-          {error && <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>}
+          {error && <p className="text-sm" style={{ color: '#9B1C1C' }}>{error}</p>}
           <button onClick={handleCheckToken}
             className="glass-button-primary w-full rounded-xl py-3 text-sm font-medium transition-all">
             Continue
@@ -678,18 +660,18 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
 
       {step === 'validating' && (
         <div className="py-8 text-center">
-          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#F26B78' }} />
-          <p className="text-sm mt-4" style={{ color: '#817178' }}>Checking invitation…</p>
+          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#C8183F' }} />
+          <p className="text-sm mt-4" style={{ color: '#6A5A60' }}>Checking invitation…</p>
         </div>
       )}
 
       {step === 'code' && (
         <div className="space-y-4">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>{inviterEmoji}</div>
-            <span className="text-sm font-medium" style={{ color: '#30252A' }}>{inviterName}</span>
+            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(200,24,63,0.12)' }}>{inviterEmoji}</div>
+            <span className="text-sm font-medium" style={{ color: '#1D1317' }}>{inviterName}</span>
           </div>
-          <p className="text-sm leading-relaxed text-center" style={{ color: '#817178' }}>
+          <p className="text-sm leading-relaxed text-center" style={{ color: '#6A5A60' }}>
             Enter the 6-character pairing code {inviterName} shared with you.
           </p>
           <input
@@ -702,10 +684,10 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
             autoCorrect="off"
             spellCheck={false}
             className="glass-input w-full rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[0.4em]"
-            style={{ color: '#30252A' }}
+            style={{ color: '#1D1317' }}
             onKeyDown={(e) => { if (e.key === 'Enter' && code.length === 6) handleValidateCode() }}
           />
-          {error && <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>}
+          {error && <p className="text-sm" style={{ color: '#9B1C1C' }}>{error}</p>}
           <button onClick={handleValidateCode} disabled={code.length !== 6}
             className="glass-button-primary w-full rounded-xl py-3 text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed">
             Continue
@@ -716,12 +698,12 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
       {step === 'confirm' && (
         <div className="space-y-5">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>{inviterEmoji}</div>
-            <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M2 8 Q14 2 26 8" stroke="#F26B78" strokeWidth="1.5" opacity="0.3" fill="none" /></svg>
-            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(217,74,96,0.12)' }}>🌿</div>
+            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(200,24,63,0.12)' }}>{inviterEmoji}</div>
+            <svg width="28" height="16" viewBox="0 0 28 16" fill="none"><path d="M2 8 Q14 2 26 8" stroke="#C8183F" strokeWidth="1.5" opacity="0.3" fill="none" /></svg>
+            <div className="w-12 h-12 rounded-full glass-panel-soft flex items-center justify-center text-xl" style={{ border: '1px solid rgba(200,24,63,0.12)' }}>🌿</div>
           </div>
-          <h3 className="text-base font-semibold text-center" style={{ color: '#30252A' }}>Ready to connect?</h3>
-          <p className="text-sm leading-relaxed text-center" style={{ color: '#817178' }}>
+          <h3 className="text-base font-semibold text-center" style={{ color: '#1D1317' }}>Ready to connect?</h3>
+          <p className="text-sm leading-relaxed text-center" style={{ color: '#6A5A60' }}>
             Connecting lets you and {inviterName} share approved memories. Your private conversations stay private.
           </p>
           <button onClick={handleConfirm}
@@ -730,7 +712,7 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
             Confirm connection
           </button>
           <button onClick={() => setStep('code')}
-            className="w-full text-center text-sm py-2 transition-colors" style={{ color: '#817178' }}>
+            className="w-full text-center text-sm py-2 transition-colors" style={{ color: '#6A5A60' }}>
             Not now
           </button>
         </div>
@@ -738,8 +720,8 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
 
       {step === 'connecting' && (
         <div className="py-8 text-center">
-          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#F26B78' }} />
-          <p className="text-sm mt-4" style={{ color: '#817178' }}>Connecting…</p>
+          <div className="w-8 h-8 mx-auto border-2 border-rose-200 border-t-rose-500 rounded-full animate-spin" style={{ borderTopColor: '#C8183F' }} />
+          <p className="text-sm mt-4" style={{ color: '#6A5A60' }}>Connecting…</p>
         </div>
       )}
 
@@ -748,7 +730,7 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
           <div className="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(34,197,94,0.1)' }}>
             <Check className="w-7 h-7" style={{ color: '#22C55E' }} />
           </div>
-          <p className="text-sm font-medium" style={{ color: '#30252A' }}>You're connected!</p>
+          <p className="text-sm font-medium" style={{ color: '#1D1317' }}>You're connected!</p>
         </div>
       )}
     </Modal>

@@ -19,9 +19,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const currentLabel = navItems.find((item) => item.path === location.pathname)?.label
 
   return (
-    <div className="min-h-screen bg-ivory flex">
+    <div className="min-h-screen flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-60 border-r border-warm-grey-100 bg-white/60 backdrop-blur-sm fixed h-screen">
+      <aside className="hidden md:flex flex-col w-60 glass border-r fixed h-screen">
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-burgundy flex items-center justify-center">
@@ -77,7 +77,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       {/* Main content */}
       <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-30 bg-ivory/80 backdrop-blur-md border-b border-warm-grey-100 px-4 py-3 flex items-center justify-between">
+        <header className="md:hidden sticky top-0 z-30 glass border-b px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-burgundy flex items-center justify-center">
               <span className="text-white font-semibold text-sm">E</span>
@@ -89,13 +89,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </NavLink>
         </header>
 
-        <main className="flex-1 flex flex-col overflow-hidden pb-16 md:pb-0">
+        <main className="flex-1 flex flex-col overflow-hidden pb-24 md:pb-0">
           {children}
         </main>
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-md border-t border-warm-grey-100">
+      <nav className="md:hidden fixed bottom-3 left-3 right-3 z-30 glass rounded-3xl border">
         <div className="flex items-center justify-around px-2 py-2 safe-area-pb">
           {navItems.map((item) => (
             <NavLink
@@ -103,13 +103,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  'flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg transition-colors min-w-[56px]',
-                  isActive ? 'text-burgundy' : 'text-ink-tertiary'
+                  'flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors min-w-[56px]',
+                  isActive ? 'text-burgundy bg-burgundy-50 font-semibold' : 'text-ink-secondary'
                 )
               }
             >
               <item.icon style={{ width: 20, height: 20 }} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-xs font-medium">{item.label}</span>
             </NavLink>
           ))}
         </div>

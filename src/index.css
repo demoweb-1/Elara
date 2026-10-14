@@ -3,53 +3,27 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   html {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
-    background-color: #FAF8F5;
-    color: #202020;
-    letter-spacing: -0.01em;
+    color: #1D1317; letter-spacing: -0.01em;
+    background-color: #FFF8F9;
   }
-
+  /* Content layer: red lives in the background so the glass above can pick it up */
   body {
-    margin: 0;
-    min-height: 100vh;
-    background-color: #FAF8F5;
+    margin: 0; min-height: 100vh; background-color: transparent;
+    background-image:
+      radial-gradient(60% 45% at 85% -5%, rgba(226, 53, 88, 0.16), transparent 70%),
+      radial-gradient(55% 40% at -5% 105%, rgba(200, 24, 63, 0.12), transparent 70%);
+    background-attachment: fixed;
   }
-
-  h1, h2, h3, h4 {
-    letter-spacing: -0.02em;
-    font-weight: 600;
-  }
-
-  ::selection {
-    background-color: #F4D1D9;
-  }
-
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #D5D0C9;
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #BFB9B0;
-  }
-
-  *:focus-visible {
-    outline: 2px solid #772D43;
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
+  h1, h2, h3, h4 { letter-spacing: -0.02em; font-weight: 600; }
+  ::selection { background-color: #FFC7D0; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #E6D3D7; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #CDB8BD; }
+  *:focus-visible { outline: 2px solid #A50F33; outline-offset: 2px; border-radius: 4px; }
 }
 
 @layer components {
@@ -85,66 +59,63 @@
 }
 
 @layer components {
-  .glass-panel {
+  /* Functional layer: real Liquid Glass (sidebar, bars, composer, sheets) */
+  .glass, .glass-sheet {
     background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 32px rgba(217, 74, 96, 0.08), 0 2px 8px rgba(48, 37, 42, 0.04);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    backdrop-filter: blur(24px) saturate(1.4);
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 8px 32px rgba(120, 20, 45, 0.10);
   }
-  .glass-panel-soft {
-    background: rgba(255, 247, 248, 0.6);
-    backdrop-filter: blur(12px) saturate(130%);
-    -webkit-backdrop-filter: blur(12px) saturate(130%);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 20px rgba(217, 74, 96, 0.05);
+  .glass-sheet { background: rgba(255, 255, 255, 0.86); }
+
+  /* Content layer: near-opaque surfaces, no blur (old glass-* names kept so Together restyles) */
+  .glass-panel {
+    background: #FFFFFF; border: 1px solid #F4E6E9;
+    box-shadow: 0 4px 16px rgba(120, 20, 45, 0.08);
   }
+  .glass-panel-soft { background: #FFF1F3; border: 1px solid #FFE1E6; }
   .glass-input {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(217, 74, 96, 0.12);
+    background: #FFFFFF; border: 1px solid #E6D3D7;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .glass-input:focus {
-    border-color: #F26B78;
-    box-shadow: 0 0 0 3px rgba(242, 107, 120, 0.12);
-    outline: none;
-  }
-  .rose-glow {
-    background: radial-gradient(ellipse at top, rgba(255, 240, 242, 0.6), transparent 70%);
-  }
+  .glass-input:focus { border-color: #C8183F; box-shadow: 0 0 0 3px rgba(200, 24, 63, 0.16); outline: none; }
+  .rose-glow { background: radial-gradient(ellipse at top, rgba(226, 53, 88, 0.10), transparent 70%); }
   .glass-button-primary {
-    background: linear-gradient(135deg, #F26B78, #D94A60);
-    color: white;
-    box-shadow: 0 4px 14px rgba(217, 74, 96, 0.25);
-    transition: transform 0.15s, box-shadow 0.15s;
+    background: #C8183F; color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 14px rgba(200, 24, 63, 0.28);
+    transition: transform 0.15s, background 0.15s;
   }
-  .glass-button-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(217, 74, 96, 0.3);
-  }
-  .glass-button-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(217, 74, 96, 0.2);
-  }
+  .glass-button-primary:hover { background: #A50F33; transform: translateY(-1px); }
+  .glass-button-primary:active { transform: translateY(0); }
   .glass-button-secondary {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(217, 74, 96, 0.12);
-    color: #D94A60;
-    transition: background 0.15s;
+    background: #FFFFFF; border: 1px solid #FFC7D0; color: #A50F33; transition: background 0.15s;
   }
-  .glass-button-secondary:hover {
-    background: rgba(255, 240, 242, 0.8);
+  .glass-button-secondary:hover { background: #FFF1F3; }
+
+  /* Signature: the overlap of two people, with a glow where they meet */
+  .overlap { display: flex; align-items: center; justify-content: center; }
+  .overlap-disc {
+    width: 76px; height: 76px; border-radius: 9999px; display: flex;
+    align-items: center; justify-content: center; font-size: 1.6rem; position: relative;
+  }
+  .overlap-a { background: rgba(200, 24, 63, 0.16); border: 1px solid rgba(200, 24, 63, 0.30); }
+  .overlap-b {
+    margin-left: -26px; background: rgba(255, 255, 255, 0.62);
+    -webkit-backdrop-filter: blur(10px) saturate(1.5); backdrop-filter: blur(10px) saturate(1.5);
+    border: 1px solid rgba(200, 24, 63, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 6px 20px rgba(200, 24, 63, 0.14);
+    animation: joinDiscs 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
+@keyframes joinDiscs { from { transform: translateX(34px); } to { transform: translateX(0); } }
 
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass-sheet, .overlap-b { background: #FFFFFF; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .glass, .glass-sheet, .glass-panel { background: #FFFFFF; border: 1px solid #A50F33; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

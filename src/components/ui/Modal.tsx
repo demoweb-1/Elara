@@ -31,7 +31,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
       <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" />
       <div
         className={cn(
-          'relative bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full animate-slide-up',
+          'relative glass-sheet rounded-t-2xl sm:rounded-2xl shadow-xl w-full animate-slide-up',
           'max-h-[90vh] overflow-y-auto',
           sizeClass
         )}

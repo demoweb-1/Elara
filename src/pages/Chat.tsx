@@ -297,7 +297,7 @@ export function Chat() {
         )}
       </div>
 
-      <div className="border-t border-warm-grey-100 bg-white/80 backdrop-blur-sm px-4 md:px-8 py-3 md:py-4">
+      <div className="glass border-t px-4 md:px-8 py-3 md:py-4">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-end gap-2">
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
