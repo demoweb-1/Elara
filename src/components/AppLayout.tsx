@@ -1,3 +1,4 @@
+import { Logo } from '@/components/Logo'
 import { type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { MessageCircle, BookHeart, Heart, Sparkles, Bell, User } from 'lucide-react'
@@ -24,9 +25,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <aside className="hidden md:flex flex-col w-60 glass rounded-3xl fixed left-3 top-3 bottom-3">
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl btn-gloss bg-burgundy flex items-center justify-center">
-              <span className="text-white font-semibold text-lg">E</span>
-            </div>
+            <Logo size={36} />
             <div>
               <p className="font-semibold text-ink leading-tight">Elara</p>
               <p className="text-xs text-ink-tertiary">relationship memory</p>
@@ -79,9 +78,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {/* Mobile top bar */}
         <header className="md:hidden sticky top-2 mx-3 mt-2 rounded-2xl z-30 glass px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-burgundy flex items-center justify-center">
-              <span className="text-white font-semibold text-sm">E</span>
-            </div>
+            <Logo size={32} />
             <span className="font-semibold text-ink">{currentLabel || 'Elara'}</span>
           </div>
           <NavLink to="/profile" className="w-8 h-8 rounded-full bg-burgundy-100 flex items-center justify-center text-sm">

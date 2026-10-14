@@ -1,3 +1,4 @@
+import { Logo } from '@/components/Logo'
 import { Link } from 'react-router-dom'
 import { MessageCircle, BookHeart, Heart, Shield, Sparkles, ArrowRight } from 'lucide-react'
 
@@ -7,9 +8,7 @@ export function Landing() {
       {/* Header */}
       <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-burgundy flex items-center justify-center">
-            <span className="text-white font-semibold text-lg">E</span>
-          </div>
+          <Logo size={36} />
           <span className="font-semibold text-ink text-lg">Elara</span>
         </div>
         <Link
