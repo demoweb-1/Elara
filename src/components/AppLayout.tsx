@@ -75,7 +75,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 md:ml-[16.5rem] flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 md:ml-[16.5rem] flex flex-col min-h-screen">
         {/* Mobile top bar */}
         <header className="md:hidden sticky top-2 mx-3 mt-2 rounded-2xl z-30 glass px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">

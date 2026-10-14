@@ -244,7 +244,7 @@ export function Chat() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-w-0">
       <div className="px-4 md:px-8 py-3 border-b border-warm-grey-100 bg-white/60 backdrop-blur-sm animate-fade-in">
         <div className="flex items-center gap-2 max-w-2xl mx-auto w-full">
           <div className="w-8 h-8 rounded-full bg-burgundy-50 flex items-center justify-center">
@@ -306,7 +306,7 @@ export function Chat() {
       {!booting && !loading && memories.length < 5 && (
         <StarterChips onPick={(t) => { setInput(t); textareaRef.current?.focus() }} />
       )}
-      <div className="glass rounded-3xl mx-3 md:mx-8 mb-3 px-4 py-3">
+      <div className="glass rounded-3xl mb-3 px-4 py-3 mx-3 md:mx-auto md:w-[calc(100%-4rem)] md:max-w-2xl">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-end gap-2">
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
