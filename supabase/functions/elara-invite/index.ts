@@ -8,6 +8,7 @@ const corsHeaders = {
 
 // Approved application origins — the X-App-Url header is only trusted if it matches one of these.
 const APPROVED_ORIGINS = [
+  "https://appelara.netlify.app",
   "https://demoweb-1.github.io/Elara",
   "https://elara-ai-relationshi-z6nf.bolt.host",
   "http://localhost:5173",
@@ -493,6 +494,7 @@ Deno.serve(async (req: Request) => {
       await adminClient.from('memory_shares')
         .update({ status: 'revoked', revoked_at: new Date().toISOString() })
         .eq('id', shareId);
+      await adminClient.from('memories').update({ is_private: true }).eq('id', share.memory_id);
 
       await adminClient.from('consent_events').insert({
         user_id: user.id, event_type: 'memory_share_revoked',

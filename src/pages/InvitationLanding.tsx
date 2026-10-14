@@ -222,6 +222,7 @@ export function InvitationLanding() {
               <p className="text-sm text-center leading-relaxed mb-6" style={{ color: '#6A5A60' }}>
                 Connecting links your accounts for shared relationship features like approved memory sharing. Your private conversations and memories stay completely private.
               </p>
+<p className="text-xs text-center leading-relaxed" style={{ color: '#6A5A60' }}>Once you link, your likes and dislikes are shared with each other by default. You can make any of them private at any time.</p>
               <button
                 onClick={handleConfirmConnect}
                 className="glass-button-primary w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all">

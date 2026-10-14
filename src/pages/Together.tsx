@@ -1,4 +1,5 @@
 import { TogetherSkeleton } from '@/components/ui/Skeletons'
+import { DEFAULT_SHARED_CATEGORIES } from '@/lib/sharing'
 import { Overlap } from '@/components/Overlap'
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -75,6 +76,8 @@ export function Together() {
       } else {
         setMySharedMemories([])
       }
+      const { data: defMine } = await supabase.from('memories').select('*').eq('user_id', user.id).eq('is_private', false).in('category', DEFAULT_SHARED_CATEGORIES)
+      setMySharedMemories((prev) => { const seen = new Set(prev.map((m) => m.id)); return [...prev, ...((defMine as Memory[]) || []).filter((m) => !seen.has(m.id))] })
       return
     }
 
@@ -101,9 +104,8 @@ export function Together() {
   const handleRevokeShare = async () => {
     if (!revokeTarget) return
     const share = myShares.find((s) => s.memory_id === revokeTarget.id)
-    if (!share) return
-    const { error } = await inviteAction('revoke_share', { shareId: share.id })
-    if (error) { toast(error, 'error'); return }
+    const { error } = share ? await inviteAction('revoke_share', { shareId: share.id }) : await supabase.from('memories').update({ is_private: true }).eq('id', revokeTarget.id)
+    if (error) { toast(typeof error === 'string' ? error : error.message, 'error'); return }
     toast('Share revoked', 'success')
     setRevokeTarget(null)
     loadData()
@@ -164,6 +166,7 @@ export function Together() {
             connectionId={connectionId}
             sharedMemories={sharedMemories}
             mySharedMemories={mySharedMemories}
+            onChanged={loadData}
             onDisconnect={() => setDisconnectOpen(true)}
             onRevokeShare={(m) => setRevokeTarget(m)}
           />
@@ -309,7 +312,7 @@ function PendingView({
 // === CONNECTED VIEW ===
 function ConnectedView({
   profile, partnerName, partnerEmoji, connectionId,
-  sharedMemories, mySharedMemories, onDisconnect, onRevokeShare,
+  sharedMemories, mySharedMemories, onChanged, onDisconnect, onRevokeShare,
 }: {
   profile: any
   partnerName: string
@@ -317,6 +320,7 @@ function ConnectedView({
   connectionId: string | null
   sharedMemories: Memory[]
   mySharedMemories: Memory[]
+  onChanged: () => void
   onDisconnect: () => void
   onRevokeShare: (m: Memory) => void
 }) {
@@ -342,9 +346,11 @@ function ConnectedView({
           </div>
         </div>
         <p className="text-xs text-center" style={{ color: '#6A5A60' }}>
-          You and {partnerName} can share approved memories with each other.
+          Your likes and dislikes are shared with {partnerName} by default. You can make any memory private in Memories.
         </p>
       </div>
+
+      <ShareExistingBanner partnerName={partnerName} onChanged={onChanged} />
 
       {/* My shared memories */}
       <section className="mb-6">
@@ -703,6 +709,7 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
           <p className="text-sm leading-relaxed text-center" style={{ color: '#6A5A60' }}>
             Connecting lets you and {inviterName} share approved memories. Your private conversations stay private.
           </p>
+<p className="text-xs text-center leading-relaxed" style={{ color: '#6A5A60' }}>Once you link, your likes and dislikes are shared with each other by default. You can make any of them private at any time.</p>
           <button onClick={handleConfirm}
             className="glass-button-primary w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium transition-all">
             <Check className="w-4 h-4" />
@@ -742,5 +749,37 @@ function ShareButton({ onClick, icon, label }: { onClick: () => void; icon: Reac
       {icon}
       <span className="text-xs">{label}</span>
     </button>
+  )
+}
+
+function ShareExistingBanner({ partnerName, onChanged }: { partnerName: string; onChanged: () => void }) {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [count, setCount] = useState(0)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (!user) return
+    supabase.from('memories').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_private', true).in('category', DEFAULT_SHARED_CATEGORIES)
+      .then(({ count }) => setCount(count || 0))
+  }, [user])
+  if (count === 0) return null
+  const share = async () => {
+    if (!user) return
+    setBusy(true)
+    const { error } = await supabase.from('memories').update({ is_private: false }).eq('user_id', user.id).eq('is_private', true).in('category', DEFAULT_SHARED_CATEGORIES)
+    setBusy(false)
+    if (error) { toast('Could not share your memories', 'error'); return }
+    toast(`Shared ${count} with ${partnerName}`, 'success')
+    setCount(0)
+    onChanged()
+  }
+  return (
+    <div className="material rounded-2xl p-4 mb-6">
+      <p className="text-sm font-medium text-ink mb-1">Share your existing likes and dislikes?</p>
+      <p className="text-xs text-ink-secondary mb-3">You have {count} saved from before you linked. Share them with {partnerName}, or keep them private. You can change any of them later in Memories.</p>
+      <button onClick={share} disabled={busy} className="btn-gloss bg-burgundy text-white text-sm font-medium px-5 min-h-[44px] rounded-full disabled:opacity-60">
+        {busy ? 'Sharing…' : `Share ${count}`}
+      </button>
+    </div>
   )
 }

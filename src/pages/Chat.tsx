@@ -1,3 +1,5 @@
+import { isDefaultShared } from '@/lib/sharing'
+import { StarterChips } from '@/components/StarterChips'
 import { ChatSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, RotateCcw, BookHeart, Check, X, Sparkles, Square } from 'lucide-react'
@@ -210,11 +212,11 @@ export function Chat() {
     const { error } = await supabase.from('memories').insert({
       user_id: user.id, category: proposal.category as MemoryCategory,
       content: proposal.content, context: proposal.context, confidence: proposal.confidence,
-      source_message_id: messageId, is_private: true,
+      source_message_id: messageId, is_private: !isDefaultShared(proposal.category),
     })
     if (error) { toast('Failed to save memory', 'error') }
     else {
-      toast('Memory saved to your library', 'success')
+      toast(isDefaultShared(proposal.category) ? 'Saved. Shared with your partner once you are linked. Change it in Memories.' : 'Memory saved to your library', 'success')
       await supabase.from('messages').update({ memories_reviewed: true }).eq('id', messageId)
       setProposedMemories((prev) => { const u = { ...prev }; delete u[messageId]; return u })
       const { data: mems } = await supabase.from('memories').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
@@ -301,6 +303,9 @@ export function Chat() {
         )}
       </div>
 
+      {!booting && !loading && memories.length < 5 && (
+        <StarterChips onPick={(t) => { setInput(t); textareaRef.current?.focus() }} />
+      )}
       <div className="glass rounded-3xl mx-3 md:mx-8 mb-3 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-end gap-2">

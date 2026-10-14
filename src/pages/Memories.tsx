@@ -1,3 +1,5 @@
+import { isDefaultShared } from '@/lib/sharing'
+import { inviteAction } from '@/lib/api'
 import { PageSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useMemo } from 'react'
 import { Search, Plus, Trash2, Edit2, Check, Lock, Share2 } from 'lucide-react'
@@ -62,7 +64,7 @@ export function Memories() {
     } else {
       const { error } = await supabase.from('memories').insert({
         user_id: user.id, category: data.category, content: data.content, context: data.context,
-        is_private: data.is_private ?? true, confidence: 1.0,
+        is_private: data.is_private ?? !isDefaultShared(String(data.category)), confidence: 1.0,
       })
       if (error) toast('Failed to create memory', 'error')
       else { toast('Memory created', 'success'); setCreating(false); loadMemories() }
@@ -74,6 +76,18 @@ export function Memories() {
     const { error } = await supabase.from('memories').delete().eq('id', deleteTarget.id)
     if (error) toast('Failed to delete memory', 'error')
     else { toast('Memory deleted', 'success'); setDeleteTarget(null); setConfirmOpen(false); loadMemories() }
+  }
+
+  const togglePrivacy = async (m: Memory) => {
+    if (!user) return
+    const makePrivate = !m.is_private
+    if (makePrivate) {
+      const { data: sh } = await supabase.from('memory_shares').select('id').eq('memory_id', m.id).eq('owner_id', user.id).eq('status', 'active')
+      for (const s of sh || []) await inviteAction('revoke_share', { shareId: s.id })
+    }
+    const { error } = await supabase.from('memories').update({ is_private: makePrivate }).eq('id', m.id)
+    if (error) toast('Could not change sharing', 'error')
+    else { toast(makePrivate ? 'Now private. Only you can see it.' : 'Shared with your partner once you are linked.', 'success'); loadMemories() }
   }
 
   const handleConfirm = async (m: Memory) => {
@@ -128,7 +142,11 @@ export function Memories() {
                     <span className="text-base text-burgundy">{CATEGORY_EMOJIS[m.category]}</span>
                     <Badge variant="burgundy">{CATEGORY_LABELS[m.category]}</Badge>
                   </div>
-                  {m.is_private ? <Lock className="w-3.5 h-3.5 text-ink-tertiary" /> : <Share2 className="w-3.5 h-3.5 text-success" />}
+                  <button onClick={() => (isDefaultShared(m.category) ? togglePrivacy(m) : setShareTarget(m))}
+                    className={cn('glass-pill inline-flex items-center gap-1 text-xs font-medium px-2.5 min-h-[28px] rounded-full', m.is_private ? 'text-ink-secondary' : 'text-success')}
+                    aria-label={m.is_private ? 'Private. Tap to share with your partner' : 'Shared with your partner. Tap to make private'}>
+                    {m.is_private ? <Lock className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}{m.is_private ? 'Private' : 'Shared'}
+                  </button>
                 </div>
                 <p className="text-sm text-ink leading-relaxed mb-2">{m.content}</p>
                 {m.context && <p className="text-xs text-ink-tertiary italic mb-2">Context: {m.context}</p>}
@@ -163,19 +181,19 @@ function MemoryEditor({ memory, onClose, onSave }: { memory: Memory | null; onCl
   const [category, setCategory] = useState<MemoryCategory>(memory?.category || 'preferences')
   const [content, setContent] = useState(memory?.content || '')
   const [context, setContext] = useState(memory?.context || '')
-  const [isPrivate, setIsPrivate] = useState(memory?.is_private ?? true)
+  const [isPrivate, setIsPrivate] = useState(memory?.is_private ?? !isDefaultShared('preferences'))
 
   return (
-    <Modal open onClose={onClose} title={memory ? "Edit memory" : "New memory"} description={memory ? "Update the details of this memory." : "Add a memory to your private library."}>
+    <Modal open onClose={onClose} title={memory ? "Edit memory" : "New memory"} description={memory ? "Update the details of this memory." : "Add something about yourself for Elara to remember."}>
       <div className="space-y-4">
-        <Select label="Category" value={category} onChange={(e) => setCategory(e.target.value as MemoryCategory)}>
+        <Select label="Category" value={category} onChange={(e) => { setCategory(e.target.value as MemoryCategory); setIsPrivate(!isDefaultShared(e.target.value)) }}>
           {Object.entries(CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </Select>
         <Textarea label="Memory" value={content} onChange={(e) => setContent(e.target.value)} placeholder="What should Elara remember?" rows={3} />
         <Textarea label="Context (optional)" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Any additional context…" rows={2} />
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="w-4 h-4 rounded border-warm-grey-300 text-burgundy focus:ring-burgundy/20" />
-          <span className="text-sm text-ink">Keep this memory private</span>
+          <span className="text-sm text-ink">Keep this memory private<span className="block text-xs text-ink-secondary mt-0.5">{isDefaultShared(category) ? "Likes and dislikes are shared with your partner once you're linked, unless you keep them private." : "Other memories stay private unless you choose to share them."}</span></span>
         </label>
         <div className="flex gap-3 justify-end pt-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>

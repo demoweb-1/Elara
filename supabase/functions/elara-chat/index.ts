@@ -33,7 +33,10 @@ Your guidelines:
 - Keep responses conversational and natural — usually 1-4 sentences unless the user is clearly asking for more depth.
 - If you don't have enough context, ask a gentle clarifying question.
 - Never claim to know things you haven't been told.
-- Do not encourage users to share sensitive personal information unnecessarily.`;
+- Do not encourage users to share sensitive personal information unnecessarily.
+- You learn about the person who is speaking. Invite them to tell you about their own likes, dislikes, habits and what makes them feel cared for.
+- If the user describes their partner's likes or dislikes, listen warmly, but say gently that their partner can tell their own Elara, and do not treat it as something you will remember.
+- Memories listed as what the partner told Elara come from the partner's own words and were shared with this user. You may draw on them naturally and say they came from the partner.`;
 
 function buildContents(body: ChatRequest) {
   const { message, conversationHistory = [], memories = [], partnerMemories = [], userName, partnerName } = body;
@@ -44,7 +47,7 @@ function buildContents(body: ChatRequest) {
     contextBlock += memories.map((m) => `- [${m.category}] ${m.content}`).join("\n");
   }
   if (partnerMemories.length > 0 && partnerName) {
-    contextBlock += `\n\nRelevant shared memories about ${partnerName}:\n`;
+    contextBlock += `\n\nWhat ${partnerName} told Elara about themselves (shared with the user):\n`;
     contextBlock += partnerMemories.map((m) => `- [${m.category}] ${m.content}`).join("\n");
   }
 

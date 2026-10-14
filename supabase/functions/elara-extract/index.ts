@@ -11,12 +11,12 @@ const EXTRACTION_PROMPT = `You are a memory extraction assistant for Elara, a re
 Analyze the user's message and the assistant's response to identify personal details worth remembering as structured memories.
 
 Categories:
-- preferences: Things the user or their partner likes (favorite food, music, activities)
+- preferences: Things the user likes (favorite food, music, activities)
 - dislikes: Things they don't like or avoid
-- important_dates: Birthdays, anniversaries, significant dates
+- important_dates: Dates that matter to the user (their birthday, anniversaries they care about)
 - habits_routines: Daily habits, routines, patterns
 - communication_preferences: How they prefer to communicate or be comforted
-- gifts_experiences: Gift ideas mentioned, experiences they want
+- gifts_experiences: Gifts or experiences the user would love to receive or have
 - meaningful_moments: Special moments, memories, stories shared
 - goals_plans: Future plans, aspirations, things they want to do
 
@@ -24,7 +24,7 @@ Guidelines:
 - Only extract genuine, stable information — not jokes, temporary statements, or uncertain details.
 - If the user says "maybe" or "I think" about something, set confidence lower (0.4-0.6).
 - If the user states something clearly, set confidence higher (0.7-0.9).
-- Do NOT extract information about people other than the user or their explicitly mentioned partner.
+- Only extract things the user says about THEMSELVES: their own likes, dislikes, habits, dates and feelings. Do NOT extract facts the user states about their partner or anyone else; the partner will tell their own Elara.
 - Do NOT extract sensitive personal information (health conditions, passwords, financial details).
 - If there's nothing worth remembering, return an empty array.
 - Keep content concise — one clear sentence per memory.
