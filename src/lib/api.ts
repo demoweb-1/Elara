@@ -241,7 +241,7 @@ export async function inviteAction(
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: getAnonKey(),
-    'X-App-Url': window.location.origin,
+    'X-App-Url': window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, ''),
   }
   if (session?.access_token) {
     headers['Authorization'] = `Bearer ${session.access_token}`
@@ -268,7 +268,7 @@ export async function checkInvite(token: string): Promise<{ data: InviteResponse
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     apikey: getAnonKey(),
-    'X-App-Url': window.location.origin,
+    'X-App-Url': window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, ''),
   }
   try {
     const response = await fetch(url, {
