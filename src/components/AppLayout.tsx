@@ -21,10 +21,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-60 glass border-r fixed h-screen">
+      <aside className="hidden md:flex flex-col w-60 glass rounded-3xl fixed left-3 top-3 bottom-3">
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-burgundy flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl btn-gloss bg-burgundy flex items-center justify-center">
               <span className="text-white font-semibold text-lg">E</span>
             </div>
             <div>
@@ -43,7 +43,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-burgundy-50 text-burgundy'
+                    ? 'bg-white/80 text-burgundy shadow-sm ring-1 ring-white'
                     : 'text-ink-secondary hover:text-ink hover:bg-warm-grey-50'
                 )
               }
@@ -61,7 +61,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-burgundy-50 text-burgundy'
+                  ? 'bg-white/80 text-burgundy shadow-sm ring-1 ring-white'
                   : 'text-ink-secondary hover:text-ink hover:bg-warm-grey-50'
               )
             }
@@ -75,9 +75,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
+      <div className="flex-1 md:ml-[16.5rem] flex flex-col min-h-screen">
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-30 glass border-b px-4 py-3 flex items-center justify-between">
+        <header className="md:hidden sticky top-2 mx-3 mt-2 rounded-2xl z-30 glass px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-burgundy flex items-center justify-center">
               <span className="text-white font-semibold text-sm">E</span>
@@ -104,7 +104,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               className={({ isActive }) =>
                 cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition-colors min-w-[56px]',
-                  isActive ? 'text-burgundy bg-burgundy-50 font-semibold' : 'text-ink-secondary'
+                  isActive ? 'text-burgundy bg-white/85 shadow-sm ring-1 ring-white font-semibold' : 'text-ink-secondary'
                 )
               }
             >

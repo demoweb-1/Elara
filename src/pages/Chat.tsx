@@ -297,12 +297,12 @@ export function Chat() {
         )}
       </div>
 
-      <div className="glass border-t px-4 md:px-8 py-3 md:py-4">
+      <div className="glass rounded-3xl mx-3 md:mx-8 mb-3 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-end gap-2">
             <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown} placeholder="Share what's on your mind…" rows={1}
-              className="flex-1 resize-none rounded-2xl border border-warm-grey-200 bg-white px-4 py-3 text-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all max-h-32 min-h-[44px]"
+              className="flex-1 resize-none rounded-2xl border border-white/80 bg-white/70 px-4 py-3 text-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all max-h-32 min-h-[44px]"
               onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 128) + 'px' }}
               disabled={loading} />
             {streaming ? (
@@ -333,7 +333,7 @@ function StreamingBubble({ text, onCancel }: { text: string; onCancel: () => voi
   return (
     <div className="flex justify-start animate-fade-in">
       <div className="max-w-[80%] md:max-w-[70%]">
-        <div className="rounded-2xl rounded-bl-md bg-white text-ink border border-warm-grey-100 shadow-xs px-4 py-3">
+        <div className="rounded-2xl rounded-bl-md material text-ink px-4 py-3">
           {showTyping ? (
             <div className="flex items-center gap-2">
               <div className="flex gap-1">
@@ -367,9 +367,9 @@ function MessageBubble({ message, onRetry }: { message: Message; onRetry: () => 
     <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
       <div className={cn('max-w-[80%] md:max-w-[70%]')}>
         <div className={cn('rounded-2xl px-4 py-3 text-sm leading-relaxed transition-all',
-          isUser ? 'bg-burgundy text-white rounded-br-md hover:shadow-md' : isError
+          isUser ? 'bg-burgundy btn-gloss text-white rounded-br-md' : isError
             ? 'bg-error-light text-error border border-error/10 rounded-bl-md'
-            : 'bg-white text-ink border border-warm-grey-100 rounded-bl-md shadow-xs hover:shadow-sm')}>
+            : 'material text-ink rounded-bl-md')}>
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
         <div className={cn('flex items-center gap-2 mt-1', isUser ? 'justify-end' : 'justify-start')}>
