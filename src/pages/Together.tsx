@@ -116,9 +116,9 @@ export function Together() {
   }
 
   return (
-    <div className="min-h-full overflow-y-auto" style={{ background: 'transparent' }}>
+    <div className="relative min-h-full overflow-hidden" style={{ background: 'transparent' }}>
       {/* Ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full opacity-30 pointer-events-none"
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] max-w-full h-[300px] rounded-full opacity-30 pointer-events-none"
         style={{ background: 'radial-gradient(ellipse, rgba(200,24,63,0.1), transparent 70%)' }} />
 
       <div className="relative z-10 px-4 md:px-8 py-6 max-w-2xl mx-auto w-full">
