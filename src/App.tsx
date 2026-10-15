@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { PageSkeleton } from './components/ui/Skeletons'
 import { Landing } from './pages/Landing'
@@ -15,6 +15,18 @@ const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.P
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
 const Pricing = lazy(() => import('./pages/Pricing').then((m) => ({ default: m.Pricing })))
 const InvitationLanding = lazy(() => import('./pages/InvitationLanding').then((m) => ({ default: m.InvitationLanding })))
+
+// Signed-in people skip the landing and sign-in pages and go straight to the app
+function PublicOnly({ children }: { children: React.ReactNode }) {
+  const { session, loading } = useAuth()
+  const { search } = useLocation()
+  if (loading) return <div className="min-h-screen" />
+  if (session) {
+    const redirect = new URLSearchParams(search).get('redirect')
+    return <Navigate to={redirect && redirect.startsWith('/') ? redirect : '/chat'} replace />
+  }
+  return <>{children}</>
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -52,8 +64,8 @@ export default function App() {
   return (
     <Suspense fallback={<div className="min-h-screen" />}>
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/" element={<PublicOnly><Landing /></PublicOnly>} />
+      <Route path="/auth" element={<PublicOnly><AuthPage /></PublicOnly>} />
       <Route path="/invite/:token" element={<InvitationLanding />} />
       <Route
         path="/*"

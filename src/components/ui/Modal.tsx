@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +13,15 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, description, children, size = 'md' }: ModalProps) {
+  useEffect(() => {
+    if (!open) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey) }
+  }, [open, onClose])
+
   if (!open) return null
 
   const sizeClass = {
@@ -20,9 +30,9 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
     lg: 'max-w-lg',
   }[size]
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -32,7 +42,7 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
       <div
         className={cn(
           'relative glass-sheet rounded-t-2xl sm:rounded-2xl shadow-xl w-full animate-slide-up',
-          'max-h-[90vh] overflow-y-auto',
+          'max-h-[90dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)]',
           sizeClass
         )}
         onClick={(e) => e.stopPropagation()}
@@ -56,7 +66,8 @@ export function Modal({ open, onClose, title, description, children, size = 'md'
         )}
         <div className="p-6">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
