@@ -270,6 +270,8 @@ export async function checkInvite(token: string): Promise<{ data: InviteResponse
     apikey: getAnonKey(),
     'X-App-Url': window.location.origin + import.meta.env.BASE_URL.replace(/\/$/, ''),
   }
+  const { data: { session } } = await supabase.auth.getSession()
+  headers['Authorization'] = `Bearer ${session?.access_token || getAnonKey()}`
   try {
     const response = await fetch(url, {
       method: 'POST',

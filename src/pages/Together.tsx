@@ -17,6 +17,24 @@ import { Modal, ConfirmDialog } from '@/components/ui/Modal'
 import type { Memory, MemoryShare, MemoryCategory } from '@/types'
 import { CATEGORY_LABELS, CATEGORY_EMOJIS } from '@/types'
 
+const INVITE_KEY = 'elara.invite.v1'
+type SavedInvite = { url: string; code: string }
+function readSavedInvite(uid: string): SavedInvite | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(INVITE_KEY) || 'null')
+    return v && v.uid === uid && v.url && v.code ? { url: v.url, code: v.code } : null
+  } catch { return null }
+}
+function saveInvite(uid: string, url: string, code: string) {
+  try { localStorage.setItem(INVITE_KEY, JSON.stringify({ uid, url, code })) } catch { /* storage unavailable */ }
+}
+function clearSavedInvite() { try { localStorage.removeItem(INVITE_KEY) } catch { /* ignore */ } }
+const extractToken = (val: string) => {
+  const v = val.trim()
+  const m = v.match(/\/invite\/([^/?#\s]+)/)
+  return (m ? m[1] : v).trim()
+}
+
 type ViewState = 'loading' | 'disconnected' | 'pending' | 'connected'
 
 export function Together() {
@@ -27,6 +45,8 @@ export function Together() {
   const [partnerName, setPartnerName] = useState('')
   const [partnerEmoji, setPartnerEmoji] = useState('')
   const [pendingExpiresAt, setPendingExpiresAt] = useState<string | null>(null)
+  const [savedInvite, setSavedInvite] = useState<SavedInvite | null>(null)
+  const [inviteSaved, setInviteSaved] = useState(false)
   const [sharedMemories, setSharedMemories] = useState<Memory[]>([])
   const [myShares, setMyShares] = useState<MemoryShare[]>([])
   const [mySharedMemories, setMySharedMemories] = useState<Memory[]>([])
@@ -34,6 +54,8 @@ export function Together() {
   const [enterCodeOpen, setEnterCodeOpen] = useState(false)
   const [disconnectOpen, setDisconnectOpen] = useState(false)
   const [revokeTarget, setRevokeTarget] = useState<Memory | null>(null)
+
+  useEffect(() => { if (view === 'connected' || view === 'disconnected') clearSavedInvite() }, [view])
 
   const loadData = useCallback(async () => {
     if (!user) return
@@ -52,6 +74,7 @@ export function Together() {
     }
 
     if (conn.invitation_status === 'pending') {
+      setSavedInvite(readSavedInvite(user.id))
       setView('pending')
       setConnectionId(conn.id)
       setPendingExpiresAt(conn.expires_at)
@@ -139,6 +162,8 @@ export function Together() {
 
         {view === 'pending' && (
           <PendingView
+            savedAvailable={!!savedInvite}
+            onShowAgain={() => { setInviteSaved(true); setInviteOpen(true) }}
             expiresAt={pendingExpiresAt}
             connectionId={connectionId}
             onRevoke={async () => {
@@ -175,7 +200,8 @@ export function Together() {
 
       <CreateInviteModal
         open={inviteOpen}
-        onClose={() => { setInviteOpen(false); loadData() }}
+        saved={inviteSaved ? savedInvite : null}
+        onClose={() => { setInviteOpen(false); setInviteSaved(false); loadData() }}
       />
 
       <EnterCodeModal
@@ -242,8 +268,10 @@ function DisconnectedView({ onInvite, onEnterCode }: { onInvite: () => void; onE
 
 // === PENDING VIEW ===
 function PendingView({
-  expiresAt, connectionId, onRevoke, onReplace, onReload,
+  expiresAt, connectionId, onRevoke, onReplace, onReload, savedAvailable, onShowAgain,
 }: {
+  savedAvailable: boolean
+  onShowAgain: () => void
   expiresAt: string | null
   connectionId: string | null
   onRevoke: () => void
@@ -275,9 +303,14 @@ function PendingView({
         </div>
 
         <p className="text-sm leading-relaxed mb-4" style={{ color: '#6A5A60' }}>
-          Your pairing code and link were shown when you created this invitation. If you lost them, you can revoke this invitation and create a new one.
+          {savedAvailable ? 'Tap Share again to see the link and pairing code, and send them to your partner.' : 'The link and code are only kept on the device that created the invitation. You can revoke this invitation and create a new one.'}
         </p>
 
+        {savedAvailable && (
+          <button onClick={onShowAgain} className="glass-button-primary w-full rounded-full px-5 min-h-[44px] text-sm font-medium mb-3">
+            Share again
+          </button>
+        )}
         <div className="flex gap-2">
           <button onClick={() => setRevokeConfirm(true)}
             className="glass-button-secondary flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition-all">
@@ -415,8 +448,9 @@ function ConnectedView({
 }
 
 // === CREATE INVITE MODAL ===
-function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function CreateInviteModal({ open, onClose, saved }: { open: boolean; onClose: () => void; saved: SavedInvite | null }) {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [step, setStep] = useState<'form' | 'creating' | 'result'>('form')
   const [inviteUrl, setInviteUrl] = useState('')
   const [pairingCode, setPairingCode] = useState('')
@@ -425,11 +459,17 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
 
   useEffect(() => {
     if (open) {
-      setStep('form')
-      setInviteUrl('')
-      setPairingCode('')
       setCopiedUrl(false)
       setCopiedCode(false)
+      if (saved) {
+        setInviteUrl(saved.url)
+        setPairingCode(saved.code)
+        setStep('result')
+      } else {
+        setStep('form')
+        setInviteUrl('')
+        setPairingCode('')
+      }
     }
   }, [open])
 
@@ -443,6 +483,7 @@ function CreateInviteModal({ open, onClose }: { open: boolean; onClose: () => vo
     }
     setInviteUrl(data.inviteUrl || '')
     setPairingCode(data.pairingCode || '')
+    if (user && data.inviteUrl && data.pairingCode) saveInvite(user.id, data.inviteUrl, data.pairingCode)
     setStep('result')
   }
 
@@ -592,11 +633,15 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
   const normalizeToken = (val: string) => val.toLowerCase().replace(/[^a-z0-9]/g, '')
 
   const handleCheckToken = async () => {
-    if (!inviteToken.trim()) { setError('Please enter the invitation token or open the link your partner sent'); return }
+    const raw = inviteToken.trim()
+    if (!raw) { setError('Please paste the invitation link your partner sent'); return }
+    if (/^[A-Za-z0-9]{6}$/.test(raw)) { setError('That looks like the 6-character pairing code. Paste the invitation link here first. You will be asked for the code on the next step.'); return }
+    const token = extractToken(raw)
+    setInviteToken(token)
     setStep('validating')
     setError('')
 
-    const { data, error } = await checkInvite(inviteToken.trim())
+    const { data, error } = await checkInvite(token)
 
     if (error || !data) {
       setError('Could not verify this invitation')
@@ -642,13 +687,13 @@ function EnterCodeModal({ open, onClose, onConnected }: { open: boolean; onClose
       {step === 'token' && (
         <div className="space-y-4">
           <p className="text-sm leading-relaxed" style={{ color: '#6A5A60' }}>
-            Paste the invitation link or token that your partner shared with you.
+            Paste the invitation link your partner sent you. On the next step you will enter the 6-character code they were shown.
           </p>
           <input
             type="text"
             value={inviteToken}
             onChange={(e) => { setInviteToken(e.target.value); setError('') }}
-            placeholder="Paste link or token…"
+            placeholder="Paste the invitation link…"
             className="glass-input w-full rounded-xl px-4 py-3 text-sm"
             style={{ color: '#1D1317' }}
             onKeyDown={(e) => { if (e.key === 'Enter') handleCheckToken() }}
