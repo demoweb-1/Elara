@@ -14,6 +14,7 @@ const Reminders = lazy(() => import('./pages/Reminders').then((m) => ({ default:
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })))
 const Pricing = lazy(() => import('./pages/Pricing').then((m) => ({ default: m.Pricing })))
+const GuessMe = lazy(() => import('./pages/GuessMe').then((m) => ({ default: m.GuessMe })))
 const InvitationLanding = lazy(() => import('./pages/InvitationLanding').then((m) => ({ default: m.InvitationLanding })))
 
 // Signed-in people skip the landing and sign-in pages and go straight to the app
@@ -78,6 +79,7 @@ export default function App() {
                   <Route path="/chat" element={<Chat />} />
                   <Route path="/memories" element={<Memories />} />
                   <Route path="/together" element={<Together />} />
+                  <Route path="/guess" element={<GuessMe />} />
                   <Route path="/suggestions" element={<Suggestions />} />
                   <Route path="/reminders" element={<Reminders />} />
                   <Route path="/profile" element={<Profile />} />

@@ -247,3 +247,18 @@
   .glass::after, .glass-sheet::after, .material::after, .glass-panel::after, .glass-pill::after, .glass-tint::after, .btn-gloss::after { display: none; }
   .glass-pill, .glass-tint { background: #FFFFFF; border: 1px solid #A50F33; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
+
+/* Guess Me: dark cinematic screens. Motion stays slow and purposeful. */
+@keyframes gm-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes gm-glow { 0%, 100% { transform: scale(0.96); opacity: 0.75; } 50% { transform: scale(1.04); opacity: 1; } }
+@keyframes gm-sweep { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
+@keyframes gm-line { 0% { opacity: 0.25; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+.gm-rise { animation: gm-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.gm-glow-orb { animation: gm-glow 4.5s ease-in-out infinite; }
+.gm-card { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.gm-sweep { background: linear-gradient(100deg, transparent 30%, rgba(255, 59, 79, 0.28) 50%, transparent 70%); animation: gm-sweep 1s ease-out both; }
+.gm-bridge { animation: gm-line 1.6s ease-in-out 1 both; }
+@media (prefers-reduced-motion: reduce) {
+  .gm-rise, .gm-glow-orb, .gm-sweep, .gm-bridge { animation: none !important; }
+  .gm-card { transition: none !important; }
+}

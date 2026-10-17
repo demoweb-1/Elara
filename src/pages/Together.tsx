@@ -1,3 +1,4 @@
+import { GuessMeEntry } from '@/components/GuessMeEntry'
 import { TogetherSkeleton } from '@/components/ui/Skeletons'
 import { DEFAULT_SHARED_CATEGORIES } from '@/lib/sharing'
 import { Overlap } from '@/components/Overlap'
@@ -183,6 +184,7 @@ export function Together() {
           />
         )}
 
+        {view === 'connected' && <GuessMeEntry />}
         {view === 'connected' && (
           <ConnectedView
             profile={profile}
