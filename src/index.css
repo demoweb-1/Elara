@@ -278,3 +278,34 @@
 @media (prefers-reduced-motion: reduce) {
   .elara-orb, .elara-speak { animation: none !important; }
 }
+
+/* Elara's mascot (small orb in the chat header) */
+.elara-orb-mini {
+  position: relative;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFD0D7 0%, #FF3B4F 38%, #8A0B1E 78%, #2a0408 100%);
+  box-shadow: 0 0 14px rgba(255, 59, 79, 0.4);
+  animation: elara-breathe 6s ease-in-out infinite;
+  transition: box-shadow 0.25s ease;
+}
+.elara-orb-mini.is-speaking {
+  animation: elara-speak 0.9s ease-in-out infinite;
+  box-shadow: 0 0 calc(14px + var(--level, 0) * 34px) rgba(255, 59, 79, 0.75);
+}
+.elara-orb-mini.is-listening {
+  box-shadow: 0 0 0 5px rgba(255, 59, 79, 0.15), 0 0 24px rgba(255, 59, 79, 0.6);
+}
+.elara-orb-mini.is-thinking::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 70%, rgba(255, 59, 79, 0.95) 88%, transparent 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+  animation: elara-spin 2.4s linear infinite;
+}
+@keyframes elara-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .elara-orb-mini, .elara-orb-mini::after { animation: none !important; }
+}

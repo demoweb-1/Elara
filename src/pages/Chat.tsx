@@ -2,7 +2,9 @@ import { isDefaultShared } from '@/lib/sharing'
 import { StarterChips } from '@/components/StarterChips'
 import { ChatSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Send, RotateCcw, BookHeart, Check, X, Sparkles, Square } from 'lucide-react'
+import { Send, RotateCcw, BookHeart, Check, X, Sparkles, Square, Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
+import { ElaraOrb, type OrbState } from '@/components/ElaraOrb'
+import { getVoiceMode, getReadAloud, setReadAloud, prepareNaturalVoice, releaseNaturalVoice, speakReply, stopSpeaking, listenOnce, isListeningSupported } from '@/lib/elaraVoice'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/context/ToastContext'
 import { supabase } from '@/lib/supabase'
@@ -81,10 +83,48 @@ export function Chat() {
     }
   }
 
+  const [readAloud, setReadAloudState] = useState(getReadAloud)
+  const [speakingNow, setSpeakingNow] = useState(false)
+  const [listening, setListening] = useState(false)
+  const [voiceNote, setVoiceNote] = useState('')
+  const stopListenRef = useRef<(() => void) | null>(null)
+  const mascot: OrbState = listening ? 'listening' : speakingNow ? 'speaking' : (loading || streaming) ? 'thinking' : 'idle'
+
+  useEffect(() => () => { stopSpeaking(); stopListenRef.current?.(); releaseNaturalVoice() }, [])
+
+  const toggleReadAloud = async () => {
+    const next = !readAloud
+    setReadAloudState(next)
+    setReadAloud(next)
+    if (!next) { stopSpeaking(); setSpeakingNow(false); setVoiceNote(''); return }
+    if (getVoiceMode() === 'natural') {
+      setVoiceNote('Getting Elara ready to speak…')
+      try {
+        await prepareNaturalVoice((pct) => setVoiceNote(`Getting Elara ready to speak… ${pct}%`))
+        setVoiceNote('')
+      } catch {
+        setVoiceNote('The natural voice is unavailable here, so Elara will use the standard voice.')
+      }
+    }
+  }
+
+  const toggleListen = () => {
+    if (listening) { stopListenRef.current?.(); return }
+    const stop = listenOnce(
+      (text) => { setInput((prev) => (prev.trim() ? prev.trim() + ' ' : '') + text); textareaRef.current?.focus() },
+      () => { setListening(false); stopListenRef.current = null },
+    )
+    if (!stop) return
+    stopListenRef.current = stop
+    setListening(true)
+  }
+
   const handleSend = async () => {
     if (!input.trim() || loading || !user || !conversation) return
     const userMessage = input.trim()
     setInput('')
+    stopSpeaking()
+    setSpeakingNow(false)
     setLoading(true)
     setStreaming(true)
     setStreamingText('')
@@ -149,6 +189,7 @@ export function Chat() {
     if (aiMsg) {
       setMessages((prev) => [...prev, aiMsg as Message])
       setLoading(false)
+      if (getReadAloud()) speakReply(finalText, () => setSpeakingNow(true), () => setSpeakingNow(false))
 
       // Fire memory extraction in the background — non-blocking
       extractMemoriesInBackground(userMessage, finalText, aiMsg.id)
@@ -247,15 +288,19 @@ export function Chat() {
     <div className="flex flex-col h-full min-w-0">
       <div className="px-4 md:px-8 py-3 border-b border-warm-grey-100 bg-white/60 backdrop-blur-sm animate-fade-in">
         <div className="flex items-center gap-2 max-w-2xl mx-auto w-full">
-          <div className="w-8 h-8 rounded-full bg-burgundy-50 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-burgundy" />
-          </div>
+          <ElaraOrb state={mascot} size={36} />
           <div>
             <p className="text-sm font-semibold text-ink">Elara</p>
             <p className="text-xs text-ink-tertiary">{memories.length} memories remembered</p>
           </div>
+          <button onClick={toggleReadAloud} aria-pressed={readAloud} aria-label="Read Elara's replies aloud"
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-full glass-pill text-burgundy-700">
+            {readAloud ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
         </div>
       </div>
+
+      {voiceNote && <p className="px-4 md:px-8 pt-2 text-center text-xs text-ink-tertiary">{voiceNote}</p>}
 
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
         {booting ? (
@@ -314,6 +359,13 @@ export function Chat() {
               className="flex-1 resize-none rounded-2xl border border-white/80 bg-white/70 px-4 py-3 text-sm text-ink placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all max-h-32 min-h-[44px]"
               onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 128) + 'px' }}
               disabled={loading} />
+            {isListeningSupported() && !streaming && (
+              <button onClick={toggleListen} aria-pressed={listening}
+                aria-label={listening ? 'Stop listening' : 'Speak to Elara'}
+                className={cn('w-11 h-11 rounded-full flex items-center justify-center shrink-0 transition-all', listening ? 'bg-burgundy text-white' : 'glass-pill text-burgundy-700')}>
+                {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+            )}
             {streaming ? (
               <button onClick={handleCancel}
                 className="w-11 h-11 rounded-full flex items-center justify-center transition-all shrink-0 bg-warm-grey-200 text-ink hover:bg-warm-grey-300"

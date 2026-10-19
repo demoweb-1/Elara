@@ -43,6 +43,8 @@ self.onmessage = async (e) => {
 };
 `
 
+export type EndFn = (completed: boolean) => void
+
 export function getVoiceMode(): VoiceMode {
   try { return localStorage.getItem(MODE_KEY) === 'natural' ? 'natural' : 'standard' } catch { return 'standard' }
 }
@@ -125,21 +127,42 @@ export async function prepareNaturalVoice(onProgress?: (pct: number) => void, li
   reporter?.(100)
 }
 
+const READ_KEY = 'elara.readAloud'
+
+export function getReadAloud(): boolean {
+  try { return localStorage.getItem(READ_KEY) === 'on' } catch { return false }
+}
+
+export function setReadAloud(on: boolean) {
+  try { localStorage.setItem(READ_KEY, on ? 'on' : 'off') } catch { /* storage unavailable */ }
+}
+
 let token = 0
+let replyRun = 0
 let current: HTMLAudioElement | null = null
+let activeEnd: EndFn | null = null
+
+// Tells whoever started the current line that it has finished (completed) or was cut off.
+function finishActive(completed: boolean) {
+  const e = activeEnd
+  activeEnd = null
+  e?.(completed)
+}
 
 function stopCurrent() {
   if (current) { current.pause(); current.src = ''; current = null }
 }
 
-// Stops anything Elara is saying, in either voice.
+// Stops anything Elara is saying, in either voice, including a reply that is still being read out.
 export function stopSpeaking() {
   token++
+  replyRun++
+  finishActive(false)
   stopCurrent()
   try { window.speechSynthesis?.cancel() } catch { /* not supported */ }
 }
 
-// Frees the voice model and its audio, for example when leaving onboarding.
+// Frees the voice model and its audio, for example when leaving the page.
 export function releaseNaturalVoice() {
   stopSpeaking()
   worker?.terminate()
@@ -151,9 +174,42 @@ export function releaseNaturalVoice() {
   cache.clear()
 }
 
-function speakStandard(text: string, onStart?: () => void, onEnd?: () => void) {
+// Audio analysis so the mascot can move with the voice. Only the natural voice has a level to read.
+let audioCtx: AudioContext | null = null
+let analyser: AnalyserNode | null = null
+
+function attachAnalyser(el: HTMLAudioElement) {
+  try {
+    const w = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }
+    const Ctx = w.AudioContext || w.webkitAudioContext
+    if (!Ctx) return
+    if (!audioCtx) {
+      audioCtx = new Ctx()
+      analyser = audioCtx.createAnalyser()
+      analyser.fftSize = 256
+      analyser.connect(audioCtx.destination)
+    }
+    if (audioCtx.state === 'suspended') void audioCtx.resume()
+    audioCtx.createMediaElementSource(el).connect(analyser!)
+  } catch { /* analysis unavailable; the mascot still animates */ }
+}
+
+// How loud Elara is right now, from 0 to 1.
+export function getSpeechLevel(): number {
+  if (!analyser || !current) return 0
+  const buf = new Uint8Array(analyser.fftSize)
+  analyser.getByteTimeDomainData(buf)
+  let sum = 0
+  for (let i = 0; i < buf.length; i++) {
+    const d = (buf[i] - 128) / 128
+    sum += d * d
+  }
+  return Math.min(1, Math.sqrt(sum / buf.length) * 4)
+}
+
+function speakStandard(text: string, onStart: () => void, end: EndFn) {
   const synth = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null
-  if (!synth) { onEnd?.(); return }
+  if (!synth) { end(false); return }
   synth.cancel()
   const u = new SpeechSynthesisUtterance(text)
   u.rate = 0.95
@@ -162,35 +218,94 @@ function speakStandard(text: string, onStart?: () => void, onEnd?: () => void) {
   const pick = voices.find((v) => /^en/i.test(v.lang) && /female|samantha|aria|jenny|zira|google uk english female/i.test(v.name))
     || voices.find((v) => /^en/i.test(v.lang))
   if (pick) u.voice = pick
-  u.onstart = () => onStart?.()
-  u.onend = () => onEnd?.()
-  u.onerror = () => onEnd?.()
+  activeEnd = end
+  u.onstart = () => onStart()
+  u.onend = () => { if (activeEnd === end) finishActive(true) }
+  u.onerror = () => { if (activeEnd === end) finishActive(false) }
   synth.speak(u)
 }
 
-// Speaks a line in the chosen voice. Falls back to the standard voice if the natural one is unavailable.
-export async function speakAloud(text: string, onStart?: () => void, onEnd?: () => void): Promise<void> {
+// Speaks one line in the chosen voice. Falls back to the standard voice if the natural one is unavailable.
+export async function speakAloud(text: string, onStart?: () => void, onEnd?: EndFn): Promise<void> {
   const my = ++token
+  const end: EndFn = onEnd ?? (() => {})
+  finishActive(false)
   stopCurrent()
   try { window.speechSynthesis?.cancel() } catch { /* not supported */ }
 
   if (getVoiceMode() === 'natural' && !brokenNatural) {
     try {
       const url = await synthesizeUrl(text)
-      if (my !== token) { onEnd?.(); return }
+      if (my !== token) { end(false); return }
       const el = new Audio(url)
       current = el
+      attachAnalyser(el)
+      activeEnd = end
       el.onplay = () => onStart?.()
-      el.onended = () => { stopCurrent(); onEnd?.() }
-      el.onerror = () => { stopCurrent(); onEnd?.() }
+      el.onended = () => { if (current === el) { current = null; finishActive(true) } }
+      el.onerror = () => { if (current === el) { current = null; finishActive(false) } }
       await el.play()
       return
     } catch {
-      if (my !== token) { onEnd?.(); return }
+      if (my !== token) { end(false); return }
       stopCurrent()
+      activeEnd = null
     }
   }
-  speakStandard(text, onStart, onEnd)
+  speakStandard(text, onStart ?? (() => {}), end)
+}
+
+// Reads a longer reply one sentence at a time, so the first sentence starts quickly.
+export function speakReply(text: string, onStart?: () => void, onEnd?: () => void): void {
+  const run = ++replyRun
+  const parts = text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)
+  if (parts.length === 0) { onEnd?.(); return }
+  let started = false
+  const first = () => { if (!started) { started = true; onStart?.() } }
+  const step = (i: number) => {
+    speakAloud(parts[i], first, (completed) => {
+      if (completed && run === replyRun && i + 1 < parts.length) step(i + 1)
+      else onEnd?.()
+    })
+  }
+  step(0)
+}
+
+type SpeechRec = {
+  lang: string; interimResults: boolean; continuous: boolean
+  onresult: ((e: any) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+  start: () => void; stop: () => void
+}
+
+function getRecognitionCtor(): (new () => SpeechRec) | null {
+  if (typeof window === 'undefined') return null
+  const w = window as unknown as { SpeechRecognition?: new () => SpeechRec; webkitSpeechRecognition?: new () => SpeechRec }
+  return w.SpeechRecognition || w.webkitSpeechRecognition || null
+}
+
+export function isListeningSupported(): boolean {
+  return !!getRecognitionCtor()
+}
+
+// Listens for one spoken phrase. Returns a function that stops listening early, or null if unsupported.
+export function listenOnce(onText: (text: string) => void, onEnd?: () => void): (() => void) | null {
+  const Ctor = getRecognitionCtor()
+  if (!Ctor) return null
+  stopSpeaking()
+  const rec = new Ctor()
+  rec.lang = 'en-US'
+  rec.interimResults = false
+  rec.continuous = false
+  rec.onresult = (e: any) => {
+    const text = String(e?.results?.[0]?.[0]?.transcript ?? '').trim()
+    if (text) onText(text)
+  }
+  rec.onerror = () => onEnd?.()
+  rec.onend = () => onEnd?.()
+  rec.start()
+  return () => rec.stop()
 }
 
 // Packs the model's raw samples into a WAV file the audio element can play.
