@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import type { MemoryCategory } from '@/types'
 import { isDefaultShared } from '@/lib/sharing'
 import { cn } from '@/lib/utils'
+import { getVoiceMode, setVoiceMode, prepareNaturalVoice, speakAloud, stopSpeaking, type VoiceMode } from '@/lib/elaraVoice'
 
 // Dark, intimate palette shared with the Guess Me game.
 const RED = '#FF3B4F'
@@ -37,29 +38,10 @@ type SpeechRecognitionLike = {
   start: () => void; stop: () => void
 }
 
-const synth: SpeechSynthesis | null = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null
-
 function getRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === 'undefined') return null
   const w = window as unknown as { SpeechRecognition?: new () => SpeechRecognitionLike; webkitSpeechRecognition?: new () => SpeechRecognitionLike }
   return w.SpeechRecognition || w.webkitSpeechRecognition || null
-}
-
-// Elara's voice: the device's own speech engine. No audio leaves the phone.
-function speak(text: string, onStart?: () => void, onEnd?: () => void) {
-  if (!synth) { onEnd?.(); return }
-  synth.cancel()
-  const u = new SpeechSynthesisUtterance(text)
-  u.rate = 0.95
-  u.pitch = 1.05
-  const voices = synth.getVoices()
-  const pick = voices.find((v) => /^en/i.test(v.lang) && /female|samantha|aria|jenny|zira|google uk english female/i.test(v.name))
-    || voices.find((v) => /^en/i.test(v.lang))
-  if (pick) u.voice = pick
-  u.onstart = () => onStart?.()
-  u.onend = () => onEnd?.()
-  u.onerror = () => onEnd?.()
-  synth.speak(u)
 }
 
 export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[]) => void }) {
@@ -73,38 +55,59 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
   const [speaking, setSpeaking] = useState(false)
   const [listening, setListening] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [voice, setVoice] = useState<VoiceMode>(getVoiceMode)
+  const [preparing, setPreparing] = useState(false)
+  const [voicePct, setVoicePct] = useState<number | null>(null)
+  const [voiceNote, setVoiceNote] = useState('')
   const recRef = useRef<SpeechRecognitionLike | null>(null)
   const skipNextSpeak = useRef(false)
   const canListen = !!getRecognitionCtor()
   const q = QUESTIONS[index]
 
-  useEffect(() => () => { synth?.cancel(); recRef.current?.stop() }, [])
+  useEffect(() => () => { stopSpeaking(); recRef.current?.stop() }, [])
 
-  // Each question is spoken as it appears. The welcome tap already spoke the first one.
+  // Each question is spoken as it appears. The Start tap already spoke the first one.
   useEffect(() => {
     if (skipNextSpeak.current) { skipNextSpeak.current = false; return }
-    if (stage === 'question' && q && !muted) speak(q.ask, () => setSpeaking(true), () => setSpeaking(false))
+    if (stage === 'question' && q && !muted) speakAloud(q.ask, () => setSpeaking(true), () => setSpeaking(false))
     if (stage !== 'question') setSpeaking(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, index])
 
-  function start() {
-    // Speaking straight from a tap is what lets phones play sound, so the first question is spoken here.
+  function chooseVoice(mode: VoiceMode) {
+    setVoiceMode(mode)
+    setVoice(mode)
+    setVoiceNote('')
+  }
+
+  async function start() {
+    // Speaking from a tap is what lets phones play sound, so the first line is spoken here.
+    if (voice === 'natural') {
+      setPreparing(true)
+      setVoicePct(0)
+      setVoiceNote('')
+      try {
+        await prepareNaturalVoice(setVoicePct)
+      } catch {
+        setVoiceNote('The natural voice could not load on this connection, so Elara will use the standard voice.')
+      }
+      setPreparing(false)
+    }
     if (!muted) {
       skipNextSpeak.current = true
-      speak(`Hey, I'm Elara. Let's get to know you a little better. ${QUESTIONS[0].ask}`, () => setSpeaking(true), () => setSpeaking(false))
+      speakAloud(`Hey, I'm Elara. Let's get to know you a little better. ${QUESTIONS[0].ask}`, () => setSpeaking(true), () => setSpeaking(false))
     }
     setIndex(0)
     setStage('question')
   }
 
   function toggleMute() {
-    if (!muted) { synth?.cancel(); setSpeaking(false) }
+    if (!muted) { stopSpeaking(); setSpeaking(false) }
     setMuted(!muted)
   }
 
   function replay() {
-    if (q && !muted) speak(q.ask, () => setSpeaking(true), () => setSpeaking(false))
+    if (q && !muted) speakAloud(q.ask, () => setSpeaking(true), () => setSpeaking(false))
   }
 
   function resetInput() {
@@ -112,6 +115,7 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
   }
 
   function advance(from: number) {
+    stopSpeaking()
     resetInput()
     if (editing) { setEditing(false); setStage('summary'); return }
     if (from + 1 < QUESTIONS.length) { setIndex(from + 1); setStage('question') } else setStage('summary')
@@ -135,7 +139,7 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
   function listen() {
     const Ctor = getRecognitionCtor()
     if (!Ctor || !q) return
-    synth?.cancel()
+    stopSpeaking()
     const rec = new Ctor()
     rec.lang = 'en-US'
     rec.interimResults = false
@@ -193,7 +197,24 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
         <p style={sub}>
           Let&apos;s get to know you a little better. I&apos;ll ask one question at a time. Tap an answer, speak it, or type your own.
         </p>
-        <PrimaryButton onClick={start}>Start</PrimaryButton>
+
+        <div className="mt-8 w-full">
+          <p className="mb-2 text-xs" style={{ color: MUTED }}>Elara&apos;s voice</p>
+          <div role="radiogroup" aria-label="Elara's voice" className="grid grid-cols-2 gap-3">
+            <VoiceChoice selected={voice === 'standard'} title="Standard" detail="Instant. Nothing to download." onClick={() => chooseVoice('standard')} />
+            <VoiceChoice selected={voice === 'natural'} title="Natural" detail="Downloads once, about 90 MB." onClick={() => chooseVoice('natural')} />
+          </div>
+        </div>
+
+        {voiceNote && <p className="mt-4 text-xs" style={{ color: MUTED }}>{voiceNote}</p>}
+
+        {preparing ? (
+          <p aria-live="polite" className="mt-8 text-sm" style={{ color: WARM }}>
+            Preparing Elara&apos;s voice{voicePct !== null ? `… ${voicePct}%` : '…'}
+          </p>
+        ) : (
+          <PrimaryButton onClick={start}>Start</PrimaryButton>
+        )}
         <p className="mt-6 text-xs" style={{ color: MUTED }}>I&apos;ll read each question aloud. You can mute me at any time.</p>
       </Shell>
     )
@@ -314,8 +335,8 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
   )
 }
 
-const h1: React.CSSProperties = { color: WARM, fontSize: 32, lineHeight: 1.15, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 24 }
-const sub: React.CSSProperties = { color: MUTED, fontSize: 16, lineHeight: 1.5, marginTop: 12 }
+const h1: CSSProperties = { color: WARM, fontSize: 32, lineHeight: 1.15, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 24 }
+const sub: CSSProperties = { color: MUTED, fontSize: 16, lineHeight: 1.5, marginTop: 12 }
 
 function Shell({ children }: { children: ReactNode }) {
   return (
@@ -350,6 +371,25 @@ function PrimaryButton({ children, onClick }: { children: ReactNode; onClick: ()
       style={{ background: RED, color: INK, boxShadow: '0 0 28px rgba(255,59,79,0.4)' }}
     >
       {children}
+    </button>
+  )
+}
+
+function VoiceChoice({ selected, title, detail, onClick }: { selected: boolean; title: string; detail: string; onClick: () => void }) {
+  return (
+    <button
+      role="radio"
+      aria-checked={selected}
+      onClick={onClick}
+      className="gm-card rounded-2xl px-4 py-3 text-left"
+      style={{
+        background: selected ? 'rgba(255,59,79,0.10)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${selected ? RED : BORDER}`,
+        boxShadow: selected ? '0 0 20px rgba(255,59,79,0.3)' : 'none',
+      }}
+    >
+      <span className="block text-[15px] font-medium" style={{ color: WARM }}>{title}</span>
+      <span className="mt-1 block text-xs" style={{ color: MUTED }}>{detail}</span>
     </button>
   )
 }
