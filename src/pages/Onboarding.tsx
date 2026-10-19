@@ -1,3 +1,5 @@
+import { ElaraConversation, type ElaraAnswer } from '@/components/ElaraConversation'
+import { isDefaultShared } from '@/lib/sharing'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Shield, MessageCircle, BookHeart } from 'lucide-react'
@@ -28,6 +30,7 @@ const steps = [
 export function Onboarding() {
   const { user, profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
+  const [answers, setAnswers] = useState<ElaraAnswer[]>([])
   const [step, setStep] = useState(0)
   const [name, setName] = useState(profile?.display_name || '')
   const [partnerName, setPartnerName] = useState('')
@@ -80,12 +83,35 @@ export function Onboarding() {
       })
     }
 
+    // Save the answers the user confirmed in the conversation as memories.
+    if (answers.length > 0) {
+      const { error: memError } = await supabase.from('memories').insert(answers.map((a) => ({
+        user_id: user.id,
+        category: a.category,
+        content: `${a.label}: ${a.value}`,
+        context: 'onboarding',
+        confidence: 1.0,
+        is_private: !isDefaultShared(a.category),
+        last_confirmed_at: new Date().toISOString(),
+      })))
+      if (memError) console.error('Saving onboarding answers failed:', memError)
+    }
+
     await refreshProfile()
     setLoading(false)
     navigate('/chat')
   }
 
-  const isLastStep = step === steps.length
+  // Step 3 is the Elara conversation, which takes over the screen.
+  if (step === steps.length) {
+    return (
+      <ElaraConversation
+        onDone={(a) => { setAnswers(a); setStep(steps.length + 1) }}
+      />
+    )
+  }
+
+  const isLastStep = step === steps.length + 1
   const isIntroStep = step < steps.length
 
   return (
@@ -93,7 +119,7 @@ export function Onboarding() {
       <div className="w-full max-w-md">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-1.5 mb-8">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className={`h-1.5 rounded-full transition-all duration-300 ${

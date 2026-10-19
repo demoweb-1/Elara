@@ -262,3 +262,19 @@
   .gm-rise, .gm-glow-orb, .gm-sweep, .gm-bridge { animation: none !important; }
   .gm-card { transition: none !important; }
 }
+
+/* Elara voice companion: the glowing orb. It breathes when idle, swells when speaking and haloes when listening. */
+.elara-orb {
+  width: 132px; height: 132px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFD0D7 0%, #FF3B4F 38%, #8A0B1E 78%, #2a0408 100%);
+  box-shadow: 0 0 60px rgba(255, 59, 79, 0.45), inset -12px -18px 30px rgba(0, 0, 0, 0.35);
+  animation: elara-breathe 6s ease-in-out infinite;
+  transition: box-shadow 0.4s ease;
+}
+.elara-speak { animation: elara-speak 0.9s ease-in-out infinite; }
+.elara-listen { box-shadow: 0 0 0 14px rgba(255, 59, 79, 0.12), 0 0 80px rgba(255, 59, 79, 0.6); }
+@keyframes elara-breathe { 0%, 100% { transform: scale(0.97); } 50% { transform: scale(1.02); } }
+@keyframes elara-speak { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+@media (prefers-reduced-motion: reduce) {
+  .elara-orb, .elara-speak { animation: none !important; }
+}
