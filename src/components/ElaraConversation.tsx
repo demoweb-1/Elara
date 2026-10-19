@@ -3,7 +3,7 @@ import { Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import type { MemoryCategory } from '@/types'
 import { isDefaultShared } from '@/lib/sharing'
 import { cn } from '@/lib/utils'
-import { getVoiceMode, setVoiceMode, prepareNaturalVoice, speakAloud, stopSpeaking, type VoiceMode } from '@/lib/elaraVoice'
+import { getVoiceMode, setVoiceMode, prepareNaturalVoice, releaseNaturalVoice, speakAloud, stopSpeaking, type VoiceMode } from '@/lib/elaraVoice'
 
 // Dark, intimate palette shared with the Guess Me game.
 const RED = '#FF3B4F'
@@ -28,6 +28,8 @@ const QUESTIONS: Question[] = [
   { id: 'drains', label: 'Mood drops when', ask: 'What tends to drain your mood the most?', category: 'dislikes', optional: true,
     options: ['Plans changing last minute', 'Crowded, noisy places', 'Feeling rushed', 'Being interrupted'] },
 ]
+
+const GREETING_LINE = `Hey, I'm Elara. Let's get to know you a little better. ${QUESTIONS[0].ask}`
 
 type Stage = 'welcome' | 'question' | 'confirm' | 'summary'
 type SpeechRecognitionLike = {
@@ -64,7 +66,7 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
   const canListen = !!getRecognitionCtor()
   const q = QUESTIONS[index]
 
-  useEffect(() => () => { stopSpeaking(); recRef.current?.stop() }, [])
+  useEffect(() => () => { releaseNaturalVoice(); recRef.current?.stop() }, [])
 
   // Each question is spoken as it appears. The Start tap already spoke the first one.
   useEffect(() => {
@@ -87,7 +89,7 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
       setVoicePct(0)
       setVoiceNote('')
       try {
-        await prepareNaturalVoice(setVoicePct)
+        await prepareNaturalVoice(setVoicePct, [GREETING_LINE, ...QUESTIONS.map((x) => x.ask)])
       } catch {
         setVoiceNote('The natural voice could not load on this connection, so Elara will use the standard voice.')
       }
@@ -95,7 +97,7 @@ export function ElaraConversation({ onDone }: { onDone: (answers: ElaraAnswer[])
     }
     if (!muted) {
       skipNextSpeak.current = true
-      speakAloud(`Hey, I'm Elara. Let's get to know you a little better. ${QUESTIONS[0].ask}`, () => setSpeaking(true), () => setSpeaking(false))
+      speakAloud(GREETING_LINE, () => setSpeaking(true), () => setSpeaking(false))
     }
     setIndex(0)
     setStage('question')
