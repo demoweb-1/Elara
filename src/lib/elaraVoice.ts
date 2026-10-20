@@ -251,6 +251,7 @@ export async function speakAloud(text: string, onStart?: () => void, onEnd?: End
 export function speakReply(text: string, onStart?: () => void, onEnd?: () => void): void {
   const run = ++replyRun
   const parts = text.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean)
+  console.info('[Elara] reading reply:', parts.length, 'sentence(s), voice =', getVoiceMode())
   if (parts.length === 0) { onEnd?.(); return }
   let started = false
   const first = () => { if (!started) { started = true; onStart?.() } }

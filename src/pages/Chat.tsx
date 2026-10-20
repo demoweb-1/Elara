@@ -189,6 +189,7 @@ export function Chat() {
     if (aiMsg) {
       setMessages((prev) => [...prev, aiMsg as Message])
       setLoading(false)
+      console.info('[Elara] reply received. Read aloud is', getReadAloud() ? 'on' : 'off')
       if (getReadAloud()) speakReply(finalText, () => setSpeakingNow(true), () => setSpeakingNow(false))
 
       // Fire memory extraction in the background — non-blocking
@@ -294,8 +295,9 @@ export function Chat() {
             <p className="text-xs text-ink-tertiary">{memories.length} memories remembered</p>
           </div>
           <button onClick={toggleReadAloud} aria-pressed={readAloud} aria-label="Read Elara's replies aloud"
-            className="ml-auto flex h-9 w-9 items-center justify-center rounded-full glass-pill text-burgundy-700">
+            className={cn('ml-auto flex items-center gap-1.5 rounded-full px-3 h-9 text-xs font-medium glass-pill', readAloud ? 'text-burgundy-700' : 'text-ink-tertiary')}>
             {readAloud ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {readAloud ? 'Read aloud on' : 'Read aloud off'}
           </button>
         </div>
       </div>
