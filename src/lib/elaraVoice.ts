@@ -193,6 +193,8 @@ function speakStandard(text: string, onStart: () => void, end: EndFn) {
   const pick = voices.find((v) => /^en/i.test(v.lang) && /female|samantha|aria|jenny|zira|google uk english female/i.test(v.name))
     || voices.find((v) => /^en/i.test(v.lang))
   if (pick) u.voice = pick
+  console.info('[Elara] standard voice: voices available', voices.length, '| paused', synth.paused)
+  if (synth.paused) synth.resume()
   liveUtterance = u
   activeEnd = end
   const guard = window.setTimeout(() => { if (activeEnd === end) finishActive(true) }, estimateMs(text))
@@ -202,7 +204,8 @@ function speakStandard(text: string, onStart: () => void, end: EndFn) {
     liveUtterance = null
     if (activeEnd === end) finishActive(true)
   }
-  u.onerror = () => {
+  u.onerror = (e) => {
+    console.warn('[Elara] speech error:', e.error)
     window.clearTimeout(guard)
     liveUtterance = null
     if (activeEnd === end) finishActive(false)
@@ -327,4 +330,14 @@ function toWav(samples: Float32Array, sampleRate: number): Blob {
     view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true)
   }
   return new Blob([buffer], { type: 'audio/wav' })
+}
+
+// A button press starts this directly, so it always runs from a user tap. Used to test the voice in isolation.
+export function testVoice(): void {
+  console.info('[Elara] test voice pressed')
+  speakAloud(
+    'Hello, this is Elara. Can you hear me?',
+    () => console.info('[Elara] test voice started'),
+    (completed) => console.info('[Elara] test voice finished, completed =', completed),
+  )
 }

@@ -4,7 +4,7 @@ import { ChatSkeleton } from '@/components/ui/Skeletons'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Send, RotateCcw, BookHeart, Check, X, Sparkles, Square, Mic, MicOff, Volume2, VolumeX } from 'lucide-react'
 import { ElaraOrb, type OrbState } from '@/components/ElaraOrb'
-import { getVoiceMode, getReadAloud, setReadAloud, prepareNaturalVoice, releaseNaturalVoice, speakReply, stopSpeaking, listenOnce, isListeningSupported } from '@/lib/elaraVoice'
+import { getVoiceMode, getReadAloud, setReadAloud, prepareNaturalVoice, releaseNaturalVoice, speakReply, stopSpeaking, listenOnce, isListeningSupported, testVoice } from '@/lib/elaraVoice'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/context/ToastContext'
 import { supabase } from '@/lib/supabase'
@@ -298,6 +298,9 @@ export function Chat() {
             className={cn('ml-auto flex items-center gap-1.5 rounded-full px-3 h-9 text-xs font-medium glass-pill', readAloud ? 'text-burgundy-700' : 'text-ink-tertiary')}>
             {readAloud ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             {readAloud ? 'Read aloud on' : 'Read aloud off'}
+          </button>
+          <button onClick={testVoice} className="flex h-9 items-center rounded-full px-3 text-xs font-medium glass-pill text-burgundy-700">
+            Test voice
           </button>
         </div>
       </div>
