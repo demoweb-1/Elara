@@ -159,6 +159,7 @@ export function stopSpeaking() {
   replyRun++
   finishActive(false)
   stopCurrent()
+  liveUtterance = null
   try { window.speechSynthesis?.cancel() } catch { /* not supported */ }
 }
 
@@ -174,38 +175,12 @@ export function releaseNaturalVoice() {
   cache.clear()
 }
 
-// Audio analysis so the mascot can move with the voice. Only the natural voice has a level to read.
-let audioCtx: AudioContext | null = null
-let analyser: AnalyserNode | null = null
+// Keeps the speech object alive until it finishes. Without this, some browsers drop it mid-sentence,
+// so the "finished" signal never arrives and reading stops after the first sentence.
+let liveUtterance: SpeechSynthesisUtterance | null = null
 
-function attachAnalyser(el: HTMLAudioElement) {
-  try {
-    const w = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }
-    const Ctx = w.AudioContext || w.webkitAudioContext
-    if (!Ctx) return
-    if (!audioCtx) {
-      audioCtx = new Ctx()
-      analyser = audioCtx.createAnalyser()
-      analyser.fftSize = 256
-      analyser.connect(audioCtx.destination)
-    }
-    if (audioCtx.state === 'suspended') void audioCtx.resume()
-    audioCtx.createMediaElementSource(el).connect(analyser!)
-  } catch { /* analysis unavailable; the mascot still animates */ }
-}
-
-// How loud Elara is right now, from 0 to 1.
-export function getSpeechLevel(): number {
-  if (!analyser || !current) return 0
-  const buf = new Uint8Array(analyser.fftSize)
-  analyser.getByteTimeDomainData(buf)
-  let sum = 0
-  for (let i = 0; i < buf.length; i++) {
-    const d = (buf[i] - 128) / 128
-    sum += d * d
-  }
-  return Math.min(1, Math.sqrt(sum / buf.length) * 4)
-}
+// A rough length for a sentence, used as a fallback timer if the browser never reports it finished.
+const estimateMs = (text: string) => Math.max(2500, text.length * 90) + 2000
 
 function speakStandard(text: string, onStart: () => void, end: EndFn) {
   const synth = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null
@@ -218,10 +193,20 @@ function speakStandard(text: string, onStart: () => void, end: EndFn) {
   const pick = voices.find((v) => /^en/i.test(v.lang) && /female|samantha|aria|jenny|zira|google uk english female/i.test(v.name))
     || voices.find((v) => /^en/i.test(v.lang))
   if (pick) u.voice = pick
+  liveUtterance = u
   activeEnd = end
+  const guard = window.setTimeout(() => { if (activeEnd === end) finishActive(true) }, estimateMs(text))
   u.onstart = () => onStart()
-  u.onend = () => { if (activeEnd === end) finishActive(true) }
-  u.onerror = () => { if (activeEnd === end) finishActive(false) }
+  u.onend = () => {
+    window.clearTimeout(guard)
+    liveUtterance = null
+    if (activeEnd === end) finishActive(true)
+  }
+  u.onerror = () => {
+    window.clearTimeout(guard)
+    liveUtterance = null
+    if (activeEnd === end) finishActive(false)
+  }
   synth.speak(u)
 }
 
@@ -239,11 +224,18 @@ export async function speakAloud(text: string, onStart?: () => void, onEnd?: End
       if (my !== token) { end(false); return }
       const el = new Audio(url)
       current = el
-      attachAnalyser(el)
       activeEnd = end
+      let guard = 0
+      const clear = () => window.clearTimeout(guard)
+      // If the sound stops before its end, move on once its expected length has passed.
+      el.onloadedmetadata = () => {
+        guard = window.setTimeout(() => {
+          if (current === el) { stopCurrent(); finishActive(true) }
+        }, el.duration * 1000 + 1500)
+      }
       el.onplay = () => onStart?.()
-      el.onended = () => { if (current === el) { current = null; finishActive(true) } }
-      el.onerror = () => { if (current === el) { current = null; finishActive(false) } }
+      el.onended = () => { clear(); if (current === el) { current = null; finishActive(true) } }
+      el.onerror = () => { clear(); if (current === el) { current = null; finishActive(false) } }
       await el.play()
       return
     } catch {
