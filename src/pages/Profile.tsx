@@ -1,3 +1,4 @@
+import { LoveLinkSettings } from '@/components/LoveLinkSettings'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Crown, Bell, User, LogOut, ChevronRight } from 'lucide-react'
@@ -39,6 +40,7 @@ export function Profile() {
     <div className="flex flex-col h-full overflow-y-auto">
       <div className="px-4 md:px-8 py-4 max-w-2xl mx-auto w-full">
         <h1 className="text-xl font-semibold text-ink mb-6">Profile</h1>
+        <LoveLinkSettings />
 
         <Card className="p-6 mb-4">
           <div className="flex items-center gap-4 mb-4">
