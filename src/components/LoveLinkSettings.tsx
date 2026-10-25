@@ -91,7 +91,7 @@ export function LoveLinkSettings() {
           onClick={toggle}
           className={cn(
             'relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-40',
-            s.enabled ? 'bg-burgundy' : 'bg-warm-grey-200',
+            s.enabled ? 'bg-burgundy btn-gloss' : 'glass-pill',
           )}
         >
           <span className={cn(
@@ -117,7 +117,7 @@ export function LoveLinkSettings() {
         <div className="mt-6 border-t border-warm-grey-100 pt-6">
           <button
             onClick={sendTest}
-            className="min-h-[40px] rounded-full border border-burgundy px-4 text-[13px] font-medium text-burgundy transition-transform active:scale-[0.98]"
+            className="glass-pill min-h-[40px] rounded-full px-5 text-[13px] font-medium text-burgundy-700 transition-transform active:scale-[0.98]"
           >
             Send a test now
           </button>
