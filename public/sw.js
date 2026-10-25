@@ -1,12 +1,23 @@
 // Elara service worker: shows LoveLink notifications and opens the app when they are tapped.
+// Design follows Apple's notification guidance: a short title, no repeated app name, one clear tap target,
+// a quiet monochrome status-bar badge, and a restrained banner.
+
+const TITLE_PREFIX = /^Elara\s*·\s*/
+
 self.addEventListener('push', (event) => {
-  let data = { title: 'Elara · LoveLink', body: 'A little detail, remembered.', url: '/' }
+  let data = { title: 'LoveLink', body: 'A little detail, remembered.', url: '/' }
   try { data = { ...data, ...event.data.json() } } catch { /* keep defaults */ }
-  event.waitUntil(self.registration.showNotification(data.title, {
+  const title = (data.title || 'LoveLink').replace(TITLE_PREFIX, '')
+
+  event.waitUntil(self.registration.showNotification(title, {
     body: data.body,
     icon: 'icon-192.png',
-    badge: 'icon-192.png',
+    badge: 'lovelink-badge.png',
+    image: 'lovelink-banner.png',
     tag: data.tag || 'lovelink',
+    renotify: true,
+    vibrate: [40, 30, 40],
+    timestamp: Date.now(),
     data: { url: data.url },
   }))
 })
