@@ -1,4 +1,5 @@
 import { SuggestionsSkeleton } from '@/components/ui/Skeletons'
+import { MomentsCard } from '@/components/MomentsCard'
 import { useState, useEffect } from 'react'
 import { Sparkles, Gift, Calendar, HandHeart, Lightbulb } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -53,6 +54,8 @@ export function Suggestions() {
       <div className="px-4 md:px-8 py-4 max-w-3xl mx-auto w-full">
         <h1 className="text-xl font-semibold text-ink mb-1">Thoughtful Suggestions</h1>
         <p className="text-sm text-ink-tertiary mb-6">Grounded in what Elara remembers</p>
+
+        <MomentsCard memories={memories} sharedMemories={sharedMemories} />
 
         <div className="grid sm:grid-cols-2 gap-3 mb-6">
           {types.map((st) => (
