@@ -4,13 +4,12 @@ import { useToast } from '@/context/ToastContext'
 import { supabase } from '@/lib/supabase'
 import { getSuggestions } from '@/lib/api'
 import { getConnectionId } from '@/lib/guessMe'
-import { loadMoment, saveMoment, weekKey, weekStartLabel, type Moment, type MomentIdea } from '@/lib/moments'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { SuggestionsSkeleton } from '@/components/ui/Skeletons'
+import { loadMoment, saveMoment, weekKey, type Moment, type MomentIdea } from '@/lib/moments'
+import { Shimmer } from '@/components/ui/Skeletons'
+import { cn } from '@/lib/utils'
 import type { Memory } from '@/types'
 
-// Shows this week's three ideas for your partner. Only visible once you are linked.
+// This week's Moment: three ideas for your partner. Shown only once you are linked.
 export function MomentsCard({ memories, sharedMemories }: { memories: Memory[]; sharedMemories: Memory[] }) {
   const { user, profile } = useAuth()
   const { toast } = useToast()
@@ -29,7 +28,7 @@ export function MomentsCard({ memories, sharedMemories }: { memories: Memory[]; 
     setMoment(loadMoment(user.id))
   }, [user])
 
-  // Make this week's Moment once per visit. The flag stops repeated attempts after a failure.
+  // Make this week's Moment once. The flag stops repeated attempts after a failure.
   useEffect(() => {
     if (!user || !connected || !enough || moment || attempted.current) return
     attempted.current = true
@@ -67,7 +66,7 @@ export function MomentsCard({ memories, sharedMemories }: { memories: Memory[]; 
     saveMoment(user.id, next)
     setMoment(next)
     setPlanning(null)
-    toast(`Added to Reminders for ${due.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}`, 'success')
+    toast(`Added to Reminders, ${due.toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })}`, 'success')
   }
 
   const dismiss = (title: string) => {
@@ -82,45 +81,98 @@ export function MomentsCard({ memories, sharedMemories }: { memories: Memory[]; 
   const visible = moment ? moment.ideas.filter((i) => !moment.dismissed.includes(i.title)) : []
 
   return (
-    <Card className="p-5 mb-6">
-      <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-ink">This week&apos;s Moment</p>
-        <span className="text-xs text-ink-tertiary">Week of {weekStartLabel()}</span>
-      </div>
-      <p className="text-xs text-ink-tertiary mt-1 mb-3">Three small ideas for {partnerName}, based on what you both shared.</p>
+    <section aria-labelledby="moment-title" className="material mb-8 rounded-3xl px-5 py-6 md:px-7">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-burgundy">This week</p>
+      <h2 id="moment-title" className="mt-1.5 text-[22px] font-semibold tracking-tight text-ink">
+        A Moment for {partnerName}
+      </h2>
 
       {!enough && (
-        <p className="text-sm text-ink-secondary">Chat with Elara and save a few memories, and your Moment will appear here.</p>
-      )}
-      {enough && loading && <SuggestionsSkeleton />}
-      {enough && !loading && moment && visible.length === 0 && (
-        <p className="text-sm text-ink-secondary">You have seen this week&apos;s ideas. A new Moment arrives next week.</p>
+        <p className="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-ink-secondary">
+          Save a few memories in chat, and your Moment will appear here.
+        </p>
       )}
 
-      {visible.map((idea) => (
-        <div key={idea.title} className="border-t border-warm-grey-100 pt-4 mt-4 first:border-0 first:pt-0 first:mt-0">
-          <p className="text-sm font-medium text-ink">{idea.title}</p>
-          <p className="text-sm text-ink-secondary mt-1">{idea.description}</p>
-          {idea.basedOn && idea.basedOn.length > 0 && (
-            <p className="text-xs text-ink-tertiary mt-1">Based on: {idea.basedOn.join(', ')}</p>
-          )}
-          {moment?.planned.includes(idea.title) ? (
-            <p className="text-xs text-success mt-2">Added to your plan</p>
-          ) : (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {planning === idea.title ? (
-                <>
-                  <Button size="sm" onClick={() => addToPlan(idea, 'tonight')}>Tonight</Button>
-                  <Button size="sm" variant="secondary" onClick={() => addToPlan(idea, 'soon')}>In 3 days</Button>
-                </>
-              ) : (
-                <Button size="sm" onClick={() => setPlanning(idea.title)}>Add to my plan</Button>
-              )}
-              <Button size="sm" variant="ghost" onClick={() => dismiss(idea.title)}>Not this one</Button>
+      {enough && loading && (
+        <div className="mt-5 space-y-6" aria-busy="true" aria-label="Preparing this week's ideas">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="space-y-2.5">
+              <Shimmer className="h-5 w-2/5" />
+              <Shimmer className="h-4 w-full" />
+              <Shimmer className="h-4 w-4/5" />
             </div>
-          )}
+          ))}
         </div>
-      ))}
-    </Card>
+      )}
+
+      {enough && !loading && moment && visible.length === 0 && (
+        <p className="mt-3 text-[15px] leading-relaxed text-ink-secondary">
+          You have seen this week&apos;s ideas. A new Moment arrives next week.
+        </p>
+      )}
+
+      {visible.length > 0 && (
+        <>
+          <p className="mt-1 text-[15px] text-ink-secondary">Three small ideas, built from what you both shared.</p>
+          <ul className="mt-5 divide-y divide-warm-grey-100">
+            {visible.map((idea) => {
+              const isPlanned = moment?.planned.includes(idea.title)
+              const isPlanning = planning === idea.title
+              return (
+                <li key={idea.title} className="py-5 first:pt-0 last:pb-0">
+                  <h3 className="text-[17px] font-semibold tracking-tight text-ink">{idea.title}</h3>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-ink-secondary">{idea.description}</p>
+                  {idea.basedOn && idea.basedOn.length > 0 && (
+                    <p className="mt-2 text-[13px] leading-snug text-ink-tertiary">From {idea.basedOn.join(', ')}</p>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {isPlanned ? (
+                      <p className="text-[13px] font-medium text-success">Added to your plan</p>
+                    ) : isPlanning ? (
+                      <>
+                        <div role="group" aria-label="When" className="inline-flex rounded-full bg-warm-grey-100 p-1">
+                          <SegmentButton onClick={() => addToPlan(idea, 'tonight')}>Tonight</SegmentButton>
+                          <SegmentButton onClick={() => addToPlan(idea, 'soon')}>In 3 days</SegmentButton>
+                        </div>
+                        <button onClick={() => setPlanning(null)} className="text-[13px] text-ink-tertiary transition-colors hover:text-ink">
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setPlanning(idea.title)}
+                          className="min-h-[36px] rounded-full bg-burgundy px-4 text-[13px] font-semibold text-white transition-transform active:scale-[0.98]"
+                        >
+                          Add to plan
+                        </button>
+                        <button onClick={() => dismiss(idea.title)} className="text-[13px] text-ink-tertiary transition-colors hover:text-ink">
+                          Not this one
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      )}
+    </section>
+  )
+}
+
+function SegmentButton({ children, onClick }: { children: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'min-h-[32px] rounded-full px-3.5 text-[13px] font-medium text-ink transition-all active:scale-[0.98]',
+        'hover:bg-white hover:shadow-sm',
+      )}
+    >
+      {children}
+    </button>
   )
 }
